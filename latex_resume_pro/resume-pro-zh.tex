@@ -1,0 +1,47 @@
+%% ============================================================
+%%  resume-pro-zh.tex — 专业中文简历主文件
+%% ------------------------------------------------------------
+%%  编译方式（推荐 latexmk）：
+%%      latexmk -xelatex resume-pro-zh.tex
+%%  或：
+%%      xelatex resume-pro-zh.tex
+%%      xelatex resume-pro-zh.tex   % 跑两遍以稳定页码 / 引用
+%%
+%%  本文件只承担「装配」职责：把 modules/ 下的章节按你的需要
+%%  组合即可。要调整顺序、添加 / 删除章节，直接编辑下方 \input。
+%% ============================================================
+
+% 可选 class 选项：
+%   [zh]           中文模式（默认）
+%   [en]           英文模式（关闭 CJK 字体加载）
+%   [monochrome]   单色模式（适合打印）
+%   [compact]      紧凑模式（更窄页边、更紧密行距）
+\documentclass[zh]{resume-pro}
+
+%% 全局配置（个人信息、主题色、Logo 路径）
+\input{config.tex}
+
+\begin{document}
+
+%% ===== 1. 头部 + 摘要 =====
+\input{modules/header.tex}
+
+%% ===== 2. 专业技能 =====
+\input{modules/skills.tex}
+
+%% ===== 3. 教育背景 =====
+\input{modules/education.tex}
+
+%% ===== 4. 实习 / 工作 / 科研 =====
+\input{modules/experience.tex}
+
+%% ===== 5. 项目 + 开源 + 作品 =====
+\input{modules/projects.tex}
+
+%% ===== 6. 论文 / 专利 / 荣誉 =====
+\input{modules/publications.tex}
+
+%% ===== 7. 自我评价 + 求职意向（可选） =====
+% \input{modules/summary.tex}
+
+\end{document}

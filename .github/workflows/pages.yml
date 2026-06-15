@@ -2,25 +2,220 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [main, master]
+    paths:
+      - 'docs/**'
+      - 'latex_resume_pro/**'
+      - 'README.md'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  build-pdfs:
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache TeX build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            latex_resume_pro/*.aux
+            latex_resume_pro/*.log
+            latex_resume_pro/*.out
+            latex_resume_pro/*.fls
+            latex_resume_pro/*.fdb_latexmk
+            latex_resume_pro/*.synctex.gz
+          key: tex-${{ hashFiles('latex_resume_pro/**/*.tex', 'latex_resume_pro/**/*.cls') }}
+          restore-keys: tex-
+
+      - name: Build PDFs with LaTeX (Docker)
+        run: |
+          docker run --rm \
+            -v $PWD:/workspace \
+            -w /workspace/latex_resume_pro \
+            danteev/texlive:latest \
+            bash -c '
+              set -euo pipefail
+              echo "=== Installing Python deps ==="
+              pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
+              
+              echo "=== Generating placeholder logos ==="
+              cd logos && python3 build_placeholders.py --svg && cd ..
+              
+              echo "=== Building main resume ==="
+              xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -5
+              
+              echo "=== Building quickstart ==="
+              xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -5
+              
+              echo "=== Building themes preview ==="
+              xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -5
+              
+              echo "=== Building variants ==="
+              bash variants/build_variants.sh 2>&1 | tail -10 || true
+              
+              echo "=== Build complete ==="
+              ls -lh *.pdf 2>/dev/null || echo "No PDFs in root"
+              ls -lh variants/pdf/*.pdf 2>/dev/null || echo "No variant PDFs"
+            '
+
+      - name: Verify builds
+        run: |
+          echo "=== Verifying PDF builds ==="
+          ERRORS=0
+          
+          # Check main resume
+          if [ ! -f latex_resume_pro/resume-pro-zh.pdf ]; then
+            echo "❌ ERROR: resume-pro-zh.pdf not found"
+            ERRORS=$((ERRORS+1))
+          else
+            SIZE=$(stat -c%s latex_resume_pro/resume-pro-zh.pdf 2>/dev/null || echo 0)
+            echo "✅ resume-pro-zh.pdf ($SIZE bytes)"
+            if [ "$SIZE" -lt 10000 ]; then
+              echo "⚠️  WARNING: resume-pro-zh.pdf is suspiciously small ($SIZE bytes)"
+            fi
+          fi
+          
+          # Check quickstart
+          if [ ! -f latex_resume_pro/quickstart.pdf ]; then
+            echo "⚠️  WARNING: quickstart.pdf not found (non-critical)"
+          else
+            echo "✅ quickstart.pdf found"
+          fi
+          
+          # Check themes preview
+          if [ ! -f latex_resume_pro/themes-preview.pdf ]; then
+            echo "⚠️  WARNING: themes-preview.pdf not found (non-critical)"
+          else
+            echo "✅ themes-preview.pdf found"
+          fi
+          
+          # Check variant PDFs
+          VARIANT_COUNT=0
+          for f in latex_resume_pro/variant-*.pdf; do
+            if [ -f "$f" ]; then
+              VARIANT_COUNT=$((VARIANT_COUNT+1))
+            fi
+          done
+          if [ -d latex_resume_pro/variants/pdf ]; then
+            for f in latex_resume_pro/variants/pdf/*.pdf; do
+              if [ -f "$f" ]; then
+                VARIANT_COUNT=$((VARIANT_COUNT+1))
+              fi
+            done
+          fi
+          echo "✅ Found $VARIANT_COUNT variant PDFs"
+          
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "❌ Build verification failed with $ERRORS errors"
+            exit 1
+          fi
+          echo "=== All builds verified successfully ==="
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          
+          # Copy docs static files
+          cp -r docs/* _site/
+          
+          # Copy built PDFs
+          mkdir -p _site/pdfs
+          cp latex_resume_pro/resume-pro-zh.pdf _site/pdfs/ 2>/dev/null || true
+          cp latex_resume_pro/quickstart.pdf _site/pdfs/ 2>/dev/null || true
+          cp latex_resume_pro/themes-preview.pdf _site/pdfs/ 2>/dev/null || true
+          
+          # Copy variant PDFs
+          if [ -d latex_resume_pro/variants/pdf ]; then
+            cp latex_resume_pro/variants/pdf/*.pdf _site/pdfs/ 2>/dev/null || true
+          fi
+          
+          # Root access to main PDF
+          cp latex_resume_pro/resume-pro-zh.pdf _site/ 2>/dev/null || true
+          
+          # Generate PDF listing page
+          cat > _site/pdfs/index.html << 'PDFLIST'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta name="robots" content="noindex,nofollow">
+          <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+          <title>Resume Pro — PDF 下载</title>
+          <style>
+            *{box-sizing:border-box;margin:0;padding:0}
+            body{font-family:-apple-system,system-ui,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;background:#080910;color:#e8eaf4}
+            h1{font-size:24px;margin-bottom:8px}
+            .sub{color:#9498b8;font-size:14px;margin-bottom:24px}
+            .card{background:#0e1018;border:1px solid #252840;border-radius:8px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;transition:border-color .2s}
+            .card:hover{border-color:#5b8def}
+            .ci{font-size:28px;width:36px;text-align:center}
+            .ci2{flex:1}
+            .ci2 h3{font-size:13px;font-weight:600;margin-bottom:2px}
+            .ci2 p{font-size:11px;color:#5e6288}
+            .card a{padding:6px 14px;background:linear-gradient(135deg,#4472d6,#5b8def);color:#fff;border-radius:6px;font-size:11px;text-decoration:none;white-space:nowrap;font-weight:500}
+            .card a:hover{opacity:.9}
+            .back{display:inline-block;margin-bottom:20px;color:#5b8def;text-decoration:none;font-size:13px}
+          </style>
+          </head>
+          <body>
+          <a class="back" href="/">← 返回首页</a>
+          <h1>📄 PDF 下载</h1>
+          <p class="sub">所有自动构建的简历 PDF</p>
+          <div id="list"></div>
+          <script>
+            const pdfs=[
+              {name:'resume-pro-zh.pdf',desc:'中文主简历',icon:'📄'},
+              {name:'quickstart.pdf',desc:'极简入门示例',icon:'⚡'},
+              {name:'themes-preview.pdf',desc:'8 套主题预览',icon:'🎨'},
+              {name:'variant-academic.pdf',desc:'学术灰变体',icon:'🎓'},
+              {name:'variant-academic-long.pdf',desc:'学术长版 CV',icon:'📚'},
+              {name:'variant-blackpro.pdf',desc:'商务黑变体',icon:'💼'},
+              {name:'variant-product.pdf',desc:'活力橙变体',icon:'🚀'},
+              {name:'variant-minimalist.pdf',desc:'极简单色变体',icon:'✨'},
+              {name:'variant-onepage.pdf',desc:'一页紧凑变体',icon:'📋'},
+              {name:'variant-english.pdf',desc:'英文变体',icon:'🌍'},
+              {name:'variant-purple.pdf',desc:'专业紫变体',icon:'💜'},
+              {name:'variant-twocolumn.pdf',desc:'双栏变体',icon:'📰'},
+              {name:'variant-coverletter.pdf',desc:'求职信变体',icon:'✉️'},
+            ];
+            const el=document.getElementById('list');
+            pdfs.forEach(p=>{el.innerHTML+=`<div class="card"><span class="ci">${p.icon}</span><div class="ci2"><h3>${p.name}</h3><p>${p.desc}</p></div><a href="${p.name}" target="_blank">查看 / 下载</a></div>`});
+          </script>
+          </body>
+          </html>
+          PDFLIST
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs
-      - name: Deploy
+          path: _site
+
+  deploy:
+    needs: build-pdfs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

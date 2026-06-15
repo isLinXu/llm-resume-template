@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Pro — PDF 预览</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#080910">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080910;--bg2:#0e1018;--bg3:#161825;--bg4:#1e2035;
+  --border:#252840;--border2:#353860;
+  --text:#e8eaf4;--text2:#9498b8;--text3:#5e6288;
+  --accent:#5b8def;--accent2:#4472d6;--accent-g:rgba(91,141,239,.1);
+  --green:#3dd9a0;--red:#f06060;
+  --r:6px;--r2:10px;
+  --thumb-w:160px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--text)}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:4px;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;z-index:10}
+.toolbar .grp{display:flex;align-items:center;gap:3px}
+.toolbar .sep{width:1px;height:18px;background:var(--border);margin:0 4px}
+.tbtn{padding:4px 10px;border-radius:var(--r);font-size:11px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.tbtn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.tbtn.on{background:var(--accent-g);color:var(--accent);border-color:var(--accent)}
+.tbtn.pri{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tbtn.pri:hover{background:var(--accent)}
+.toolbar select{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:4px 8px;font-size:11px;font-family:inherit;cursor:pointer}
+.toolbar select:focus{border-color:var(--accent)}
+.toolbar .spacer{flex:1}
+.toolbar .info{font-size:10px;color:var(--text3)}
+
+/* Main layout */
+.main{flex:1;display:flex;overflow:hidden}
+
+/* Thumbnail sidebar */
+.thumbs{width:var(--thumb-w);background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;transition:width .25s}
+.thumbs.off{width:0;padding:0;border:none;overflow:hidden}
+.thumb{cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;transition:all .15s;position:relative;background:var(--bg3)}
+.thumb:hover{border-color:var(--border2)}
+.thumb.on{border-color:var(--accent)}
+.thumb canvas{width:100%;display:block}
+.thumb .pn{position:absolute;bottom:2px;right:4px;font-size:9px;color:var(--text3);background:rgba(0,0,0,.6);padding:1px 4px;border-radius:2px}
+
+/* Viewer */
+.viewer{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#1a1a2a}
+.canvas-area{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:20px;position:relative}
+.canvas-area canvas{box-shadow:0 4px 30px rgba(0,0,0,.5);transition:opacity .2s}
+
+/* Loading/Error */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:12px}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{color:var(--red);font-size:13px;max-width:400px;text-align:center}
+.err p{margin-top:6px;font-size:11px;color:var(--text3)}
+
+/* Fullscreen overlay */
+.fs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column}
+.fs-overlay.show{display:flex}
+.fs-toolbar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(14,16,24,.9);border-bottom:1px solid var(--border)}
+.fs-toolbar .info{font-size:12px;color:var(--text2);flex:1;text-align:center}
+.fs-canvas{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:20px;background:#1a1a2a}
+.fs-canvas canvas{box-shadow:0 4px 30px rgba(0,0,0,.5)}
+
+/* Toast */
+.toast-box{position:fixed;top:56px;right:14px;z-index:2000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:8px 14px;border-radius:var(--r);font-size:12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);animation:fadeIn .3s ease;max-width:300px;display:flex;align-items:center;gap:6px}
+.toast.s{border-color:var(--green)}.toast.e{border-color:var(--red)}.toast.i{border-color:var(--accent)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){.thumbs{width:0;padding:0;border:none;overflow:hidden}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="grp">
+    <button class="tbtn" onclick="goBack()">← 返回</button>
+    <div class="sep"></div>
+    <button class="tbtn" onclick="prevPage()">◀</button>
+    <button class="tbtn" onclick="nextPage()">▶</button>
+    <span class="info" id="pageInfo">-</span>
+  </div>
+  <div class="sep"></div>
+  <select id="sel" onchange="loadSel()">
+    <optgroup label="主要">
+      <option value="resume-pro-zh.pdf" selected>📄 中文主简历</option>
+      <option value="quickstart.pdf">⚡ 极简示例</option>
+      <option value="themes-preview.pdf">🎨 主题预览</option>
+    </optgroup>
+    <optgroup label="变体">
+      <option value="variant-academic.pdf">🎓 学术灰</option>
+      <option value="variant-academic-long.pdf">📚 学术长版</option>
+      <option value="variant-blackpro.pdf">💼 商务黑</option>
+      <option value="variant-product.pdf">🚀 活力橙</option>
+      <option value="variant-minimalist.pdf">✨ 极简单色</option>
+      <option value="variant-onepage.pdf">📋 一页紧凑</option>
+      <option value="variant-english.pdf">🌍 英文版</option>
+      <option value="variant-purple.pdf">💜 专业紫</option>
+      <option value="variant-twocolumn.pdf">📰 双栏</option>
+      <option value="variant-coverletter.pdf">✉️ 求职信</option>
+    </optgroup>
+  </select>
+  <div class="sep"></div>
+  <div class="grp">
+    <button class="tbtn" onclick="zoomIn()">🔍+</button>
+    <button class="tbtn" onclick="zoomOut()">🔍−</button>
+    <button class="tbtn" onclick="fitWidth()">⊡ 适应</button>
+    <span class="info" id="zoomInfo">150%</span>
+  </div>
+  <div class="sep"></div>
+  <button class="tbtn" id="thumbToggle" onclick="togThumbs()">📑 缩略</button>
+  <button class="tbtn" onclick="enterFS()">⛶ 全屏</button>
+  <button class="tbtn" onclick="printPDF()">🖨️ 打印</button>
+  <div class="spacer"></div>
+  <button class="tbtn pri" onclick="dlPDF()">⬇ 下载 PDF</button>
+</div>
+
+<div class="main">
+  <div class="thumbs" id="thumbs"></div>
+  <div class="viewer">
+    <div class="canvas-area" id="canvasArea">
+      <div class="loading" id="ld"><div class="spinner"></div><p>正在加载 PDF...</p></div>
+      <canvas id="cv" style="display:none"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen overlay -->
+<div class="fs-overlay" id="fsOverlay">
+  <div class="fs-toolbar">
+    <button class="tbtn" onclick="prevPage()">◀</button>
+    <button class="tbtn" onclick="nextPage()">▶</button>
+    <span class="info" id="fsPageInfo">-</span>
+    <button class="tbtn" onclick="zoomIn()">🔍+</button>
+    <button class="tbtn" onclick="zoomOut()">🔍−</button>
+    <button class="tbtn" onclick="fitWidth()">⊡</button>
+    <span class="info" id="fsZoomInfo">150%</span>
+    <button class="tbtn" onclick="exitFS()">✕ 退出全屏</button>
+  </div>
+  <div class="fs-canvas" id="fsCanvas">
+    <canvas id="fsCv"></canvas>
+  </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+
+<script type="module">
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+
+let doc=null, pg=1, sc=1.5, totalPages=0, url='', thumbsRendered=false;
+const params=new URLSearchParams(location.search);
+const base=params.get('base')||'../pdfs/';
+
+// Determine initial PDF from URL param or default
+const initPdf=params.get('pdf')||'resume-pro-zh.pdf';
+url=base+initPdf;
+
+// Set selector to match
+const sel=document.getElementById('sel');
+if([...sel.options].some(o=>o.value===initPdf))sel.value=initPdf;
+
+async function load(u){
+  const ld=document.getElementById('ld'),cv=document.getElementById('cv');
+  ld.style.display='flex';cv.style.display='none';
+  ld.innerHTML='<div class="spinner"></div><p>正在加载 PDF...</p>';
+  thumbsRendered=false;
+  document.getElementById('thumbs').innerHTML='';
+  try{
+    doc=await pdfjsLib.getDocument(u).promise;
+    totalPages=doc.numPages;
+    pg=1;
+    await renderPage();
+    renderThumbnails();
+    toast('i',`已加载 ${totalPages} 页`);
+  }catch(e){
+    ld.innerHTML=`<div class="err">❌ PDF 加载失败<p>${esc(e.message)}</p><p>请确认 PDF 已通过 CI 构建并部署到 GitHub Pages。<br>你也可以尝试<a href="javascript:void(0)" onclick="tryLocal()" style="color:var(--accent)">加载本地 PDF</a></p></div>`;
+  }
+}
+
+async function renderPage(targetCanvas){
+  if(!doc)return;
+  const cv=targetCanvas||document.getElementById('cv');
+  const ctx=cv.getContext('2d');
+  const page=await doc.getPage(pg);
+  const vp=page.getViewport({scale:sc});
+  cv.width=vp.width;cv.height=vp.height;
+  await page.render({canvasContext:ctx,viewport:vp}).promise;
+
+  if(!targetCanvas){
+    document.getElementById('ld').style.display='none';
+    cv.style.display='block';
+  }
+  updatePageInfo();
+  updateZoomInfo();
+
+  // Highlight active thumbnail
+  document.querySelectorAll('.thumb').forEach((t,i)=>{
+    t.classList.toggle('on',i+1===pg);
+  });
+}
+
+function updatePageInfo(){
+  const txt=`第 ${pg} 页 / 共 ${totalPages} 页`;
+  document.getElementById('pageInfo').textContent=txt;
+  const fsEl=document.getElementById('fsPageInfo');
+  if(fsEl)fsEl.textContent=txt;
+}
+
+function updateZoomInfo(){
+  const pct=Math.round(sc*100)+'%';
+  document.getElementById('zoomInfo').textContent=pct;
+  const fsEl=document.getElementById('fsZoomInfo');
+  if(fsEl)fsEl.textContent=pct;
+}
+
+async function renderThumbnails(){
+  if(!doc||thumbsRendered)return;
+  thumbsRendered=true;
+  const container=document.getElementById('thumbs');
+  container.innerHTML='';
+  const thumbScale=0.3;
+  for(let i=1;i<=totalPages;i++){
+    const page=await doc.getPage(i);
+    const vp=page.getViewport({scale:thumbScale});
+    const tc=document.createElement('canvas');
+    tc.width=vp.width;tc.height=vp.height;
+    const ctx=tc.getContext('2d');
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+
+    const div=document.createElement('div');
+    div.className='thumb'+(i===pg?' on':'');
+    div.onclick=()=>{pg=i;renderPage()};
+    div.innerHTML=`<span class="pn">${i}</span>`;
+    div.prepend(tc);
+    container.appendChild(div);
+  }
+}
+
+// Navigation
+window.prevPage=()=>{if(pg>1){pg--;renderPage()}};
+window.nextPage=()=>{if(doc&&pg<totalPages){pg++;renderPage()}};
+
+// Zoom
+window.zoomIn=()=>{sc=Math.min(sc+0.3,5);renderPage()};
+window.zoomOut=()=>{sc=Math.max(sc-0.3,0.3);renderPage()};
+window.fitWidth=async()=>{
+  if(!doc)return;
+  const page=await doc.getPage(pg);
+  const vp=page.getViewport({scale:1});
+  const area=document.getElementById('canvasArea');
+  sc=(area.clientWidth-40)/vp.width;
+  renderPage();
+};
+
+// Selection
+window.loadSel=()=>{
+  url=base+document.getElementById('sel').value;
+  load(url);
+};
+
+// Download
+window.dlPDF=()=>{window.open(url,'_blank')};
+
+// Go back
+window.goBack=()=>{
+  if(document.referrer&&document.referrer.includes(location.host)){
+    history.back();
+  }else{
+    location.href='index.html';
+  }
+};
+
+// Toggle thumbnails
+window.togThumbs=()=>{
+  const t=document.getElementById('thumbs');
+  t.classList.toggle('off');
+  document.getElementById('thumbToggle').classList.toggle('on');
+};
+
+// Fullscreen
+window.enterFS=async()=>{
+  const overlay=document.getElementById('fsOverlay');
+  overlay.classList.add('show');
+  await renderPage(document.getElementById('fsCv'));
+  document.getElementById('fsPageInfo').textContent=`第 ${pg} 页 / 共 ${totalPages} 页`;
+  document.getElementById('fsZoomInfo').textContent=Math.round(sc*100)+'%';
+};
+window.exitFS=()=>{document.getElementById('fsOverlay').classList.remove('show')};
+
+// Print
+window.printPDF=()=>{
+  if(!url)return;
+  // Open PDF in new tab for printing
+  const w=window.open(url,'_blank');
+  if(w){
+    w.addEventListener('load',()=>{try{w.print()}catch(e){}},{once:true});
+  }
+};
+
+// Try loading from different paths
+window.tryLocal=()=>{
+  const altBase='../latex_resume_pro/';
+  url=altBase+document.getElementById('sel').value;
+  load(url);
+};
+
+// Toast
+function toast(t,m){
+  const c=document.getElementById('toastBox');
+  const e=document.createElement('div');e.className=`toast ${t}`;
+  const ic={s:'✅',e:'❌',i:'ℹ️'};e.innerHTML=`<span>${ic[t]}</span><span>${m}</span>`;
+  c.appendChild(e);setTimeout(()=>e.remove(),3000);
+}
+function esc(s){return s?.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')||''}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  const inInput=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+  if(inInput)return; // Don't interfere with form inputs
+  if(e.ctrlKey||e.metaKey)return; // Don't interfere with browser shortcuts
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevPage();
+  else if(e.key==='ArrowRight'||e.key==='ArrowDown')nextPage();
+  else if(e.key==='+'||e.key==='=')zoomIn();
+  else if(e.key==='-')zoomOut();
+  else if(e.key==='f'||e.key==='F')enterFS();
+  else if(e.key==='Escape')exitFS();
+  else if(e.key==='Home'){pg=1;renderPage()}
+  else if(e.key==='End'){pg=totalPages;renderPage()}
+});
+
+// Mouse wheel zoom
+document.getElementById('canvasArea').addEventListener('wheel',e=>{
+  if(e.ctrlKey||e.metaKey){
+    e.preventDefault();
+    if(e.deltaY<0)zoomIn();else zoomOut();
+  }
+},{passive:false});
+
+// Initial load
+load(url);
+
+// Service Worker registration
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

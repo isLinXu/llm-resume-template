@@ -1,0 +1,64 @@
+%% ============================================================
+%%  variant-coverletter.tex — 求职信模板
+%%  - 专业信件抬头（发件人 + 收件人 + 日期）
+%%  - 三段式正文：开场 / 价值证明 / 收尾
+%%  - 与简历主题色保持一致
+%% ============================================================
+\documentclass[zh,nofooter]{resume-pro}
+
+\input{config.tex}
+
+\settheme{techblue}
+
+\version{Cover Letter \textbullet\ \today}
+
+\begin{document}
+\thispagestyle{empty}
+
+%% ===== 信封头：发件人 + 收件人 + 日期 =====
+\coverletterheader{李招聘}{Tech Recruiting Manager}{Anthropic}{1 Letterman Drive, San Francisco, CA}
+
+%% ===== 开场致敬语 =====
+\noindent
+\textbf{Dear 李招聘 女士},
+\par\vspace{0.6em}
+
+%% ===== 第一段：开场 — 我是谁 + 为何写这封信 =====
+\noindent
+我是清华大学计算机科学与技术专业 2026 届硕士生 \textbf{Hertz}，长期专注于大语言模型方向，
+深耕模型压缩、参数高效微调与 Agent 系统。出于对贵司在 LLM 安全对齐与 Constitutional AI
+方向工作的高度认可，特此申请贵司公开招聘的「大模型算法工程师」岗位。
+\par\vspace{0.4em}
+
+%% ===== 第二段：价值证明 — 三个核心 bullet =====
+\noindent
+我相信我能在以下三个方面立即为团队创造价值：
+\begin{itemize}
+  \item \textbf{扎实的研究品味}：以一作身份在 NeurIPS 2024（CCF-A）发表层级蒸馏工作，
+        提出注意力 / 隐层 / 输出三重对齐的 KD 方案，将 LLaMA-13B 压缩至 3B 参数同时保留 95\% 性能；
+        当前另一篇关于自反思 Agent 的工作已投稿 NeurIPS 2026。
+  \item \textbf{完整的工程能力}：在字节豆包大模型团队主导 5B tokens 高质量 CoT 数据构造，
+        HumanEval/MATH 平均 +5--8 pp；在腾讯微信 AI 团队主导推理服务优化，
+        P99 延迟从 3.2s 降至 1.8s，吞吐提升 65\%。
+  \item \textbf{开源与社区影响力}：个人开源项目累计 5,000+ Stars，
+        是 \texttt{huggingface/transformers} 与 \texttt{vllm-project/vllm} 的活跃贡献者；
+        长期撰写 LLM 系列技术博客（100k+ 阅读）与 B 站论文精读视频（1.2 万粉丝）。
+\end{itemize}
+
+%% ===== 第三段：收尾 — 表达期待 + 行动建议 =====
+\par\vspace{0.4em}
+\noindent
+我深信贵司「safe, beneficial, and steerable AI」的使命与我对长期 AI 研究的志向高度一致，
+也相信自己具备在 Anthropic 持续做出贡献的研究潜力与工程素养。
+随信附上详细简历，并诚挚期待与您进一步交流的机会。
+
+\par\vspace{0.6em}
+\noindent
+此致\\[-0.1em]
+敬礼
+\par\vspace{1.2em}
+\noindent
+\rpName \\
+{\small\color{mutedcolor}\faEnvelope\ hertz@example.com \quad \faPhone\ +86 138-0000-0000}
+
+\end{document}

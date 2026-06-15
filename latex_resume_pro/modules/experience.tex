@@ -1,0 +1,28 @@
+% modules/experience.tex — 实习 + 科研经历
+
+\sectionTitle{实习经历}{\faBriefcase}
+
+\experienceItem[\bytedanceLogo]{字节跳动 \textbullet{} 豆包大模型团队}{2024.06 -- 2024.12}{大模型算法实习生}{%
+\begin{itemize}
+  \item 主导代码与数学场景 CoT 数据构造（5B tokens 持续预训练），HumanEval/MATH/GSM8K 平均 \textbf{+5--8 pp}
+  \item 设计多任务 SFT + DPO 训练（LLaMA-3-8B），50 万条多轮对话；内部 benchmark \textbf{+3 pp}，满意度 \textbf{87\%}
+  \item ReAct + Tree-of-Thought 混合推理框架，工具调用准确率 \textbf{72\% → 89\%}，复杂任务成功率再 \textbf{+12\%}
+\end{itemize}
+}
+
+\experienceItem[\tencentLogo]{腾讯 \textbullet{} 微信 AI 团队}{2023.06 -- 2023.12}{算法工程实习生}{%
+\begin{itemize}
+  \item 推理服务优化（KV Cache 复用 + 算子融合 + 动态批），P99 \textbf{3.2s → 1.8s}，QPS \textbf{+65\%}
+  \item INT8 + 混合精度量化方案，性能保留 \textbf{98\%}，显存占用 \textbf{−55\%}，单机部署量翻倍
+  \item 基于 vLLM 二开连续批处理 + 抢占式调度，1000+ QPS 下吞吐 \textbf{+80\%}，P95 延迟 \textbf{−40\%}
+\end{itemize}
+}
+
+\sectionTitle{科研经历}{\faFlask}
+
+\experienceItem[\tsinghuaLogo]{清华大学 NLP 实验室 \textbullet{} 大模型组}{2023.09 -- 至今}{研究助理（一作 / 二作）}{%
+\begin{itemize}
+  \item \textbf{基于强化学习的自主决策 Agent}（投稿 NeurIPS 2026）：PPO + 分层 RL 框架，ALFWorld / WebShop 任务成功率 \textbf{+12--18\%}，决策步数 \textbf{−25\%}；MCTS+RL 混合机制使长序列样本效率 \textbf{+35\%}
+  \item \textbf{层级知识蒸馏与模型压缩}（NeurIPS 2024 CCF-A，已发表，引 15）：注意力/隐层/输出三重对齐，LLaMA-13B → \textbf{3B}，性能保留 \textbf{95\%}；MMLU/GSM8K 较 baseline \textbf{+4.2\%}
+\end{itemize}
+}

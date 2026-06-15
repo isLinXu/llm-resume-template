@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Pro — 在线简历编辑器</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0a0b10">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0b10;--bg2:#12131c;--bg3:#1a1c2a;--bg4:#22253a;
+  --border:#2a2e48;--border2:#363b5c;
+  --text:#e8eaf0;--text2:#9ca0bc;--text3:#6a6f8e;
+  --accent:#5b8def;--accent2:#4472d6;--accent-glow:rgba(91,141,239,.12);
+  --green:#3dd9a0;--orange:#f5a623;--red:#f06060;--purple:#b08ef7;
+  --cyan:#22d3ee;
+  --r:6px;--r2:10px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code','JetBrains Mono',monospace;
+  --side:300px;--hdr:48px;--bar:40px;
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden}
+a{color:var(--accent);text-decoration:none}
+button{font-family:var(--font);cursor:pointer;border:none;outline:none;background:none;color:inherit}
+input,select,textarea{font-family:var(--font);color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 9px;outline:none;font-size:12px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+/* === LAYOUT === */
+.app{display:flex;flex-direction:column;height:100vh}
+.hdr{display:flex;align-items:center;height:var(--hdr);padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:10px;flex-shrink:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.hdr-logo .em{font-size:18px}
+.hdr-logo b{color:var(--accent)}
+.hdr-center{flex:1;display:flex;justify-content:center}
+.hdr-acts{display:flex;align-items:center;gap:6px}
+.main{display:flex;flex:1;overflow:hidden}
+
+/* === SIDEBAR === */
+.side{width:var(--side);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1)}
+.side.off{width:0;border:none;overflow:hidden}
+.side-hdr{padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.side-body{flex:1;overflow-y:auto;padding:6px}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2)}
+.tab{flex:1;padding:8px 0;font-size:11px;font-weight:600;color:var(--text3);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--text2)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;padding:6px}
+.tab-panel.on{display:block}
+
+/* Section */
+.sec{margin-bottom:10px}
+.sec-title{font-size:11px;font-weight:600;color:var(--text2);padding:5px 7px;display:flex;align-items:center;gap:5px;cursor:pointer;border-radius:var(--r);user-select:none}
+.sec-title:hover{background:var(--bg3)}
+.sec-title .ch{font-size:9px;transition:transform .2s}
+.sec-title.shut .ch{transform:rotate(-90deg)}
+.sec-body{padding:2px 7px 6px}
+.sec-body.off{display:none}
+.fld{margin-bottom:6px}
+.fld label{display:block;font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+.fld input,.fld select{width:100%}
+.fld input[type=color]{padding:1px 3px;height:26px;width:36px}
+
+/* Theme grid */
+.tgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.tbtn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:var(--r);font-size:10px;font-weight:500;border:1px solid var(--border);transition:all .15s}
+.tbtn:hover{border-color:var(--border2);background:var(--bg3)}
+.tbtn.on{border-color:var(--accent);background:var(--accent-glow)}
+.tdot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+
+/* Variant list */
+.vlist{display:flex;flex-direction:column;gap:4px}
+.vbtn{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--r);font-size:11px;border:1px solid var(--border);transition:all .15s}
+.vbtn:hover{border-color:var(--border2);background:var(--bg3)}
+.vbtn.on{border-color:var(--accent);background:var(--accent-glow)}
+.vbtn .vi{font-size:14px;width:18px;text-align:center}
+.vbtn .vn{flex:1;font-weight:500}
+.vbtn .vs{font-size:9px;color:var(--text3)}
+
+/* Module list */
+.mlist{list-style:none}
+.mitem{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:var(--r);font-size:11px;cursor:pointer;transition:background .15s;user-select:none}
+.mitem:hover{background:var(--bg3)}
+.mitem.on{background:var(--accent-glow);color:var(--accent)}
+.mitem .mi{font-size:12px;width:16px;text-align:center}
+.mitem .mn{flex:1}
+.tgl{width:26px;height:14px;border-radius:7px;background:var(--bg4);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(--accent2)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .2s}
+.tgl.on::after{transform:translateX(12px)}
+
+/* === EDITOR === */
+.ed-area{flex:1;display:flex;flex-direction:column;min-width:360px;overflow:hidden}
+.ed-bar{display:flex;align-items:center;height:var(--bar);padding:0 10px;background:var(--bg2);border-bottom:1px solid var(--border);gap:4px;flex-shrink:0;overflow-x:auto}
+.ed-bar::-webkit-scrollbar{height:0}
+.fbtn{padding:3px 8px;font-size:11px;border-radius:var(--r);color:var(--text3);transition:all .15s;white-space:nowrap;flex-shrink:0}
+.fbtn:hover{background:var(--bg3);color:var(--text)}
+.fbtn.on{background:var(--bg3);color:var(--text)}
+.sep{width:1px;height:18px;background:var(--border);margin:0 3px;flex-shrink:0}
+.abtn{display:flex;align-items:center;gap:3px;padding:3px 10px;font-size:11px;border-radius:var(--r);transition:all .15s;white-space:nowrap}
+.abtn:hover{background:var(--bg3)}
+.abtn.pri{background:var(--accent2);color:#fff}
+.abtn.pri:hover{background:var(--accent)}
+
+/* Mode toggle */
+.mode-toggle{display:flex;background:var(--bg3);border-radius:var(--r);padding:2px;margin-left:4px}
+.mode-btn{padding:3px 10px;font-size:10px;font-weight:600;border-radius:4px;color:var(--text3);transition:all .15s}
+.mode-btn.on{background:var(--accent2);color:#fff}
+
+/* Editor wrapper with syntax highlight overlay */
+.ed-wrap{flex:1;overflow:hidden;position:relative;background:var(--bg)}
+.ed-highlight{position:absolute;top:0;left:0;right:0;bottom:0;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word;overflow:auto;pointer-events:none;color:transparent;tab-size:2;z-index:1}
+.ed-wrap textarea{position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;color:var(--text);border:none;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.65;resize:none;tab-size:2;z-index:2;-webkit-text-fill-color:transparent;caret-color:var(--text)}
+.ed-wrap.no-highlight textarea{-webkit-text-fill-color:var(--text)}
+
+.ed-status{display:flex;align-items:center;height:22px;padding:0 10px;background:var(--bg2);border-top:1px solid var(--border);font-size:10px;color:var(--text3);gap:10px;flex-shrink:0}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sdot.ok{background:var(--green)}.sdot.mod{background:var(--orange)}.sdot.err{background:var(--red)}
+
+/* === FORM EDITOR === */
+.form-ed{flex:1;overflow-y:auto;padding:14px;background:var(--bg);display:none}
+.form-ed.on{display:block}
+.form-group{margin-bottom:14px}
+.form-group-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.form-row{display:flex;gap:8px;margin-bottom:6px}
+.form-row .fld{flex:1}
+.form-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:10px;margin-bottom:8px;position:relative;transition:border-color .2s}
+.form-item:hover{border-color:var(--border2)}
+.form-item .del{position:absolute;top:6px;right:6px;font-size:14px;color:var(--text3);cursor:pointer;opacity:0;transition:opacity .15s}
+.form-item:hover .del{opacity:1}
+.form-item .del:hover{color:var(--red)}
+.add-btn{display:flex;align-items:center;gap:4px;padding:6px 12px;font-size:11px;color:var(--accent);border:1px dashed var(--border);border-radius:var(--r);width:100%;justify-content:center;transition:all .15s}
+.add-btn:hover{border-color:var(--accent);background:var(--accent-glow)}
+
+/* === RESIZER === */
+.resizer{width:5px;cursor:col-resize;background:var(--border);transition:background .15s;flex-shrink:0;position:relative}
+.resizer:hover,.resizer.active{background:var(--accent)}
+.resizer::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:24px;background:var(--text3);border-radius:1px;opacity:0;transition:opacity .15s}
+.resizer:hover::after{opacity:.5}
+
+/* === PREVIEW === */
+.pv-area{width:50%;background:#1e1e1e;border-left:none;display:flex;flex-direction:column;overflow:hidden;min-width:200px}
+.pv-area.off{display:none}
+.pv-hdr{display:flex;align-items:center;height:var(--bar);padding:0 10px;background:var(--bg2);border-bottom:1px solid var(--border);gap:6px;flex-shrink:0}
+.pv-hdr .title{font-size:11px;font-weight:600;color:var(--text2)}
+.pv-body{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px;background:#2a2a2a}
+.pv-body iframe{width:100%;max-width:780px;height:100%;border:none;border-radius:4px;background:#fff}
+.pv-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:10px}
+.pv-ph .icon{font-size:42px;opacity:.25}
+.pv-ph p{font-size:12px}
+
+/* === SEARCH BAR === */
+.search-bar{display:none;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0}
+.search-bar.show{display:flex}
+.search-bar input{flex:1;padding:3px 8px;font-size:11px;font-family:var(--mono)}
+.search-bar .count{font-size:10px;color:var(--text3);white-space:nowrap}
+.search-bar button{padding:3px 8px;font-size:10px;border-radius:4px;background:var(--bg4);color:var(--text2)}
+.search-bar button:hover{background:var(--border2)}
+
+/* === MODAL === */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.show{opacity:1;pointer-events:auto}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:90%;max-width:500px;max-height:80vh;overflow:auto}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.modal-hdr h3{font-size:14px;font-weight:600}
+.modal-x{font-size:16px;color:var(--text3);padding:4px}
+.modal-x:hover{color:var(--text)}
+.modal-body{padding:18px}
+.modal-foot{display:flex;justify-content:flex-end;gap:6px;padding:10px 18px;border-top:1px solid var(--border)}
+.btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:500;transition:all .15s}
+.btn-p{background:var(--accent2);color:#fff}.btn-p:hover{background:var(--accent)}
+.btn-g{color:var(--text2)}.btn-g:hover{background:var(--bg3)}
+
+/* === SHORTCUT OVERLAY === */
+.shortcut-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.shortcut-overlay.show{opacity:1;pointer-events:auto}
+.shortcut-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:24px 28px;max-width:420px;width:90%}
+.shortcut-card h3{font-size:16px;font-weight:700;margin-bottom:16px;text-align:center}
+.sk-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12px}
+.sk-key{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:11px;color:var(--accent);text-align:center;white-space:nowrap}
+.sk-desc{color:var(--text2)}
+
+/* === TOAST === */
+.toast-box{position:fixed;top:56px;right:14px;z-index:2000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:8px 14px;border-radius:var(--r);font-size:12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);animation:si .3s ease;max-width:340px;display:flex;align-items:center;gap:6px;position:relative;overflow:hidden}
+.toast.s{border-color:var(--green)}.toast.e{border-color:var(--red)}.toast.i{border-color:var(--accent)}
+.toast::after{content:'';position:absolute;bottom:0;left:0;height:2px;background:var(--accent);animation:toast-bar 3.5s linear forwards}
+.toast.s::after{background:var(--green)}.toast.e::after{background:var(--red)}
+@keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toast-bar{from{width:100%}to{width:0}}
+
+@media(max-width:900px){.side{width:0;border:none}.pv-area{display:none}.resizer{display:none}}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* Drop zone overlay */
+.drop-zone{position:fixed;inset:0;background:rgba(91,141,239,.15);border:3px dashed var(--accent);z-index:3000;display:none;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);pointer-events:none}
+.drop-zone.show{display:flex}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-logo"><span class="em">📄</span> Resume<b>Pro</b></div>
+    <div class="hdr-center">
+      <div class="mode-toggle">
+        <button class="mode-btn on" id="modeForm" onclick="setMode('form')">📝 表单</button>
+        <button class="mode-btn" id="modeCode" onclick="setMode('code')">💻 代码</button>
+      </div>
+    </div>
+    <div class="hdr-acts">
+      <button class="abtn" onclick="togSide()" title="侧栏 (Ctrl+B)">☰</button>
+      <button class="abtn" onclick="togPv()" title="预览 (Ctrl+J)">👁</button>
+      <div class="sep"></div>
+      <button class="abtn" onclick="toggleSearch()" title="搜索 (Ctrl+F)">🔍</button>
+      <button class="abtn" onclick="undo()" title="撤销 (Ctrl+Z)">↩</button>
+      <button class="abtn" onclick="redo()" title="重做 (Ctrl+Y)">↪</button>
+      <div class="sep"></div>
+      <button class="abtn" onclick="dlSource()">⬇ 源码</button>
+      <button class="abtn" onclick="dlZip()">📦 ZIP</button>
+      <button class="abtn" onclick="dlPDF()" title="下载PDF">⬇ PDF</button>
+      <div class="sep"></div>
+      <button class="abtn" onclick="importConfig()" title="导入配置">📥 导入</button>
+      <button class="abtn" onclick="exportConfig()" title="导出配置">📤 导出</button>
+      <div class="sep"></div>
+      <button class="abtn pri" onclick="build()">🚀 构建</button>
+      <button class="abtn" onclick="showGH()">⚙</button>
+      <span style="font-size:9px;color:var(--text3);margin-left:4px">v3.7.0</span>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="side" id="side">
+      <div class="tabs">
+        <div class="tab on" onclick="setTab(0)">🎨 主题</div>
+        <div class="tab" onclick="setTab(1)">👤 信息</div>
+        <div class="tab" onclick="setTab(2)">🧩 模块</div>
+        <div class="tab" onclick="setTab(3)">🔄 变体</div>
+      </div>
+
+      <!-- Tab 0: Theme -->
+      <div class="tab-panel on" id="tp0">
+        <div class="sec">
+          <div class="sec-title" onclick="togSec(this)"><span class="ch">▼</span> 内置主题</div>
+          <div class="sec-body"><div class="tgrid" id="tgrid"></div></div>
+        </div>
+        <div class="sec">
+          <div class="sec-title shut" onclick="togSec(this)"><span class="ch">▼</span> 自定义主题</div>
+          <div class="sec-body off">
+            <div class="fld"><label>主色</label><input type="color" id="cp1" value="#0F172A"></div>
+            <div class="fld"><label>次色</label><input type="color" id="cp2" value="#2563EB"></div>
+            <div class="fld"><label>浅底</label><input type="color" id="cp3" value="#E6EEFB"></div>
+            <button class="abtn pri" onclick="applyCustom()" style="width:100%;justify-content:center;margin-top:4px">应用自定义主题</button>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-title shut" onclick="togSec(this)"><span class="ch">▼</span> 编译选项</div>
+          <div class="sec-body off">
+            <div class="fld"><label>语言</label><select id="cfgLang" onchange="syncCfg()"><option value="zh" selected>中文</option><option value="en">English</option></select></div>
+            <div class="fld"><label>紧凑</label><select id="cfgCompact" onchange="syncCfg()"><option value="">默认</option><option value="compact">紧凑</option></select></div>
+            <div class="fld"><label>单色</label><select id="cfgMono" onchange="syncCfg()"><option value="">彩色</option><option value="monochrome">单色</option></select></div>
+            <div class="fld"><label>页脚</label><select id="cfgFooter" onchange="syncCfg()"><option value="">显示</option><option value="nofooter">隐藏</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 1: Personal Info -->
+      <div class="tab-panel" id="tp1">
+        <div class="sec">
+          <div class="sec-body">
+            <div class="fld"><label>姓名</label><input id="fName" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>职位标签</label><input id="fTagline" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>关键词</label><input id="fKeywords" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>电话</label><input id="fPhone" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>邮箱</label><input id="fEmail" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>GitHub</label><input id="fGithub" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>LinkedIn</label><input id="fLinkedin" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>网站</label><input id="fWebsite" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>博客</label><input id="fBlog" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>所在地</label><input id="fLocation" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>微信</label><input id="fWechat" oninput="debouncedSyncCfg()"></div>
+            <div class="fld"><label>知乎</label><input id="fZhihu" oninput="debouncedSyncCfg()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Modules -->
+      <div class="tab-panel" id="tp2">
+        <div class="sec">
+          <div class="sec-body">
+            <ul class="mlist" id="mlist"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Variants -->
+      <div class="tab-panel" id="tp3">
+        <div class="sec">
+          <div class="sec-body"><div class="vlist" id="vlist"></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Editor Area -->
+    <div class="ed-area">
+      <div class="ed-bar">
+        <button class="fbtn on" data-f="config.tex" onclick="swFile(this)">config.tex</button>
+        <button class="fbtn" data-f="header.tex" onclick="swFile(this)">header</button>
+        <button class="fbtn" data-f="skills.tex" onclick="swFile(this)">skills</button>
+        <button class="fbtn" data-f="education.tex" onclick="swFile(this)">education</button>
+        <button class="fbtn" data-f="experience.tex" onclick="swFile(this)">experience</button>
+        <button class="fbtn" data-f="projects.tex" onclick="swFile(this)">projects</button>
+        <button class="fbtn" data-f="publications.tex" onclick="swFile(this)">publications</button>
+        <div class="sep"></div>
+        <button class="fbtn" onclick="toggleSearch()" title="Ctrl+F">🔍 搜索</button>
+        <button class="fbtn" onclick="fmtCode()">✨ 格式化</button>
+      </div>
+      <!-- Search bar -->
+      <div class="search-bar" id="searchBar">
+        <input id="searchInput" placeholder="搜索..." oninput="doSearch()">
+        <input id="replaceInput" placeholder="替换...">
+        <span class="count" id="searchCount"></span>
+        <button onclick="findPrev()">▲</button>
+        <button onclick="findNext()">▼</button>
+        <button onclick="doReplace()">替换</button>
+        <button onclick="doReplaceAll()">全部替换</button>
+        <button onclick="toggleSearch()">✕</button>
+      </div>
+      <!-- Code editor -->
+      <div class="ed-wrap" id="codeWrap">
+        <pre class="ed-highlight" id="highlight"></pre>
+        <textarea id="editor" spellcheck="false"></textarea>
+      </div>
+      <!-- Form editor -->
+      <div class="form-ed" id="formWrap"></div>
+      <div class="ed-status">
+        <span class="sdot ok" id="sdot"></span>
+        <span id="stxt">已保存</span>
+        <span id="chars" style="margin-left:8px"></span>
+        <span style="margin-left:auto" id="cpos">行 1, 列 1</span>
+        <span>LaTeX</span>
+      </div>
+    </div>
+
+    <!-- Resizer -->
+    <div class="resizer" id="resizer"></div>
+
+    <!-- Preview -->
+    <div class="pv-area" id="pvArea">
+      <div class="pv-hdr">
+        <span class="title">📄 PDF 预览</span>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="abtn" onclick="refreshPv()">🔄</button>
+          <button class="abtn" onclick="fullPv()">⛶</button>
+        </div>
+      </div>
+      <div class="pv-body" id="pvBody">
+        <div class="pv-ph"><div class="icon">📄</div><p>点击「🚀 构建」生成 PDF</p><p style="font-size:10px">或配置 GitHub 后自动构建</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub Modal -->
+<div class="modal-bg" id="ghModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>⚙️ GitHub 配置</h3><button class="modal-x" onclick="closeM('ghModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fld"><label>GitHub Token (repo 权限)</label><input type="password" id="ghToken" placeholder="ghp_xxx" style="width:100%"></div>
+      <div class="fld"><label>Owner</label><input id="ghOwner" style="width:100%"></div>
+      <div class="fld"><label>Repo</label><input id="ghRepo" value="LLM-Resume-Template" style="width:100%"></div>
+      <div class="fld"><label>Branch</label><input id="ghBranch" value="main" style="width:100%"></div>
+      <p style="font-size:10px;color:var(--text3);margin-top:8px">💡 Token 需要 repo 权限才能提交文件。配置后点击「🚀 构建」即可自动编译。</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-g" onclick="closeM('ghModal')">取消</button><button class="btn btn-p" onclick="saveGH()">保存</button></div>
+  </div>
+</div>
+
+<!-- Shortcut overlay -->
+<div class="shortcut-overlay" id="shortcutOverlay" onclick="this.classList.remove('show')">
+  <div class="shortcut-card" onclick="event.stopPropagation()">
+    <h3>⌨️ 键盘快捷键</h3>
+    <div class="sk-grid">
+      <span class="sk-key">Ctrl+S</span><span class="sk-desc">手动保存</span>
+      <span class="sk-key">Ctrl+F</span><span class="sk-desc">搜索 / 替换</span>
+      <span class="sk-key">Ctrl+Z</span><span class="sk-desc">撤销</span>
+      <span class="sk-key">Ctrl+Y</span><span class="sk-desc">重做</span>
+      <span class="sk-key">Ctrl+B</span><span class="sk-desc">切换侧栏</span>
+      <span class="sk-key">Ctrl+J</span><span class="sk-desc">切换预览</span>
+      <span class="sk-key">Ctrl+1-7</span><span class="sk-desc">切换文件标签</span>
+      <span class="sk-key">Ctrl+Enter</span><span class="sk-desc">构建</span>
+      <span class="sk-key">?</span><span class="sk-desc">显示快捷键</span>
+      <span class="sk-key">Esc</span><span class="sk-desc">关闭弹窗</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+<div class="drop-zone" id="dropZone">📂 松开以导入 .tex 文件</div>
+
+<script>
+// ===== DATA =====
+const THEMES=[
+  {id:'techblue',name:'科技蓝',c:'#0B3D91',s:'AI/算法'},
+  {id:'businessblack',name:'商务黑',c:'#111827',s:'管理/咨询'},
+  {id:'academicgray',name:'学术灰',c:'#1F2937',s:'科研/申博'},
+  {id:'energyorange',name:'活力橙',c:'#C2410C',s:'产品/创业'},
+  {id:'innovationgreen',name:'创新绿',c:'#065F46',s:'环保/生物'},
+  {id:'professionalpurple',name:'专业紫',c:'#5B21B6',s:'艺术/媒体'},
+  {id:'crimson',name:'深红',c:'#9F1239',s:'法律/文史'},
+  {id:'ocean',name:'海洋青',c:'#0E7490',s:'教育/培训'},
+];
+const VARIANTS=[
+  {id:'main',name:'中文主简历',icon:'📄',theme:'techblue',opts:'zh',desc:'默认完整版'},
+  {id:'academic',name:'学术灰',icon:'🎓',theme:'academicgray',opts:'zh',desc:'科研/申博'},
+  {id:'academic-long',name:'学术长版',icon:'📚',theme:'academicgray',opts:'zh',desc:'3+页 CV'},
+  {id:'blackpro',name:'商务黑',icon:'💼',theme:'businessblack',opts:'zh',desc:'管理/金融'},
+  {id:'product',name:'活力橙',icon:'🚀',theme:'energyorange',opts:'zh,compact',desc:'产品/创业'},
+  {id:'minimalist',name:'极简单色',icon:'✨',theme:'techblue',opts:'zh,compact,monochrome',desc:'ATS/打印'},
+  {id:'onepage',name:'一页紧凑',icon:'📋',theme:'techblue',opts:'zh,compact,nofooter',desc:'校招首选'},
+  {id:'english',name:'英文版',icon:'🌍',theme:'techblue',opts:'en',desc:'海外/外企'},
+  {id:'purple',name:'专业紫',icon:'💜',theme:'professionalpurple',opts:'zh',desc:'创意/媒体'},
+  {id:'twocolumn',name:'双栏',icon:'📰',theme:'ocean',opts:'zh,nofooter',desc:'快速浏览'},
+  {id:'coverletter',name:'求职信',icon:'✉️',theme:'techblue',opts:'zh,nofooter',desc:'配套信件'},
+];
+const MODULES=[
+  {id:'header',name:'头部+摘要',icon:'👤',file:'modules/header.tex',on:true},
+  {id:'skills',name:'专业技能',icon:'💻',file:'modules/skills.tex',on:true},
+  {id:'education',name:'教育背景',icon:'🎓',file:'modules/education.tex',on:true},
+  {id:'experience',name:'实习/工作/科研',icon:'💼',file:'modules/experience.tex',on:true},
+  {id:'projects',name:'项目+开源',icon:'🔧',file:'modules/projects.tex',on:true},
+  {id:'publications',name:'论文/专利/荣誉',icon:'📝',file:'modules/publications.tex',on:true},
+  {id:'summary',name:'自我评价(可选)',icon:'💬',file:'modules/summary.tex',on:false},
+];
+
+// Default file contents
+const DF={};
+DF['config.tex']=`%% ============================================================
+%%  config.tex — 简历全局配置文件
+%% ============================================================
+
+%% ---------- 1. 主题色 ----------
+\\settheme{techblue}
+% \\customtheme{0F172A}{2563EB}{E6EEFB}
+
+%% ---------- 2. 个人信息 ----------
+\\name{Hertz}
+\\tagline{大模型算法工程师 · 模型压缩 · 多模态}
+\\keywords{LLM \\textbullet{} PyTorch \\textbullet{} DeepSpeed \\textbullet{} RAG \\textbullet{} Agent \\textbullet{} 模型压缩}
+
+\\phone{+86 138-0000-0000}
+\\email{adong@example.com}
+\\github{hertz}
+\\linkedin{hertz}
+\\website{https://hertz.dev}
+\\blog{https://blog.hertz.dev}
+\\location{北京·海淀}
+% \\wechat{hertz}
+% \\zhihu{hertz}
+
+%% ---------- 3. 个人头像 ----------
+\\photoshape{circular}
+\\photo{logos/avatar.png}
+
+%% ---------- 4. Logo 短宏 ----------
+\\def\\tsinghuaLogo{logos/tsinghua.png}
+\\def\\pekingLogo{logos/peking.png}
+\\def\\sjtuLogo{logos/sjtu.png}
+\\def\\tencentLogo{logos/tencent.png}
+\\def\\bytedanceLogo{logos/bytedance.png}
+\\def\\alibabaLogo{logos/alibaba.png}
+\\def\\baiduLogo{logos/baidu.png}
+\\def\\nvidiaLogo{logos/nvidia.png}
+\\def\\openaiLogo{logos/openai.png}
+\\def\\googleLogo{logos/google.png}
+
+%% ---------- 5. 页脚 ----------
+\\fileinfo{\\faCopyright\\ 2025--2026 \\rpName\\ \\textbullet\\ Built with \\LaTeX}
+\\version{v3.7.0 \\textbullet\\ \\today}
+
+%% ---------- 6. QR 码（可选）----------
+% \\qrlink{https://hertz.dev}
+
+%% ---------- 7. 最大页数限制（可选）----------
+% \\setMaxPages{1}`;
+
+DF['header.tex']=`% modules/header.tex — 头部信息 + 摘要
+
+\\makeheader
+
+\\begin{abstract}
+计算机硕士（清华），主攻大模型方向，深耕模型压缩与微调；具备字节、腾讯大模型算法实习经验；
+\\textbf{NeurIPS} 一作 1 篇、Kaggle 大模型微调金牌（Top 1\\%）、开源项目 \\textbf{500+ Stars}；
+能独立完成数据构造 → 训练优化 → 推理部署全链路。
+\\end{abstract}`;
+
+DF['skills.tex']=`% modules/skills.tex — 专业技能
+
+\\sectionTitle{专业技能}{\\faLaptopCode}
+
+\\skillrow{编程语言}{Python（精通）\\textbullet{} C++ / CUDA \\textbullet{} Bash \\textbullet{} TypeScript}
+\\skillrow{大模型}{\\skilltagAccent{LLM} \\skilltagAccent{SFT} \\skilltagAccent{RLHF/DPO} \\skilltag{LoRA/QLoRA} \\skilltag{P-Tuning} \\skilltag{Distillation} \\skilltag{Quantization} \\skilltag{RAG} \\skilltag{Agent} \\skilltag{Multimodal}}
+\\skillrow{框架工具}{PyTorch \\textbullet{} HuggingFace \\textbullet{} DeepSpeed / FSDP \\textbullet{} vLLM / TensorRT-LLM \\textbullet{} LangChain / LlamaIndex}
+\\skillrow{工程平台}{Linux \\textbullet{} Git \\textbullet{} Docker / K8s \\textbullet{} Ray \\textbullet{} Slurm \\textbullet{} W\\&B / MLflow \\textbullet{} AWS / 阿里云}
+\\skillrow{数据存储}{PostgreSQL \\textbullet{} Redis \\textbullet{} Elasticsearch \\textbullet{} Milvus / Qdrant \\textbullet{} Kafka \\textbullet{} Spark}
+\\skillrow{语言}{中文（母语）\\textbullet{} 英语（CET-6，可读写论文与技术文档）}`;
+
+DF['education.tex']=`% modules/education.tex — 教育背景
+
+\\sectionTitle{教育背景}{\\faGraduationCap}
+
+\\educationItem[\\tsinghuaLogo]{清华大学 \\textbullet{} 计算机科学与技术学院}{2023.09 -- 2026.06（预计）}{计算机科学与技术 \\textbullet{} 硕士}{专业排名前 5\\%；导师方向：大语言模型}
+\\begin{itemize}
+  \\item \\textbf{核心课程}：深度学习、自然语言处理、强化学习、分布式系统、高级算法分析
+  \\item \\textbf{荣誉}：2023 国家奖学金、2024 学业优秀奖学金（一等）、优秀研究生
+\\end{itemize}
+
+\\educationItem[\\tsinghuaLogo]{清华大学 \\textbullet{} 计算机系}{2019.09 -- 2023.06}{计算机科学与技术 \\textbullet{} 学士}{GPA 3.85/4.00；2022 春交换 ETH Zürich（成绩 5.5/6.0）}`;
+
+DF['experience.tex']=`% modules/experience.tex — 实习 + 科研经历
+
+\\sectionTitle{实习经历}{\\faBriefcase}
+
+\\experienceItem[\\bytedanceLogo]{字节跳动 \\textbullet{} 豆包大模型团队}{2024.06 -- 2024.12}{大模型算法实习生}{%
+\\begin{itemize}
+  \\item 主导代码与数学场景 CoT 数据构造（5B tokens 持续预训练），HumanEval/MATH/GSM8K 平均 \\textbf{+5--8 pp}
+  \\item 设计多任务 SFT + DPO 训练（LLaMA-3-8B），50 万条多轮对话；内部 benchmark \\textbf{+3 pp}，满意度 \\textbf{87\\%}
+  \\item ReAct + Tree-of-Thought 混合推理框架，工具调用准确率 \\textbf{72\\% → 89\\%}，复杂任务成功率再 \\textbf{+12\\%}
+\\end{itemize}
+}
+
+\\experienceItem[\\tencentLogo]{腾讯 \\textbullet{} 微信 AI 团队}{2023.06 -- 2023.12}{算法工程实习生}{%
+\\begin{itemize}
+  \\item 推理服务优化（KV Cache 复用 + 算子融合 + 动态批），P99 \\textbf{3.2s → 1.8s}，QPS \\textbf{+65\\%}
+  \\item INT8 + 混合精度量化方案，性能保留 \\textbf{98\\%}，显存占用 \\textbf{−55\\%}，单机部署量翻倍
+  \\item 基于 vLLM 二开连续批处理 + 抢占式调度，1000+ QPS 下吞吐 \\textbf{+80\\%}，P95 延迟 \\textbf{−40\\%}
+\\end{itemize}
+}
+
+\\sectionTitle{科研经历}{\\faFlask}
+
+\\experienceItem[\\tsinghuaLogo]{清华大学 NLP 实验室 \\textbullet{} 大模型组}{2023.09 -- 至今}{研究助理（一作 / 二作）}{%
+\\begin{itemize}
+  \\item \\textbf{基于强化学习的自主决策 Agent}（投稿 NeurIPS 2026）：PPO + 分层 RL 框架，ALFWorld / WebShop 任务成功率 \\textbf{+12--18\\%}，决策步数 \\textbf{−25\\%}；MCTS+RL 混合机制使长序列样本效率 \\textbf{+35\\%}
+  \\item \\textbf{层级知识蒸馏与模型压缩}（NeurIPS 2024 CCF-A，已发表，引 15）：注意力/隐层/输出三重对齐，LLaMA-13B → \\textbf{3B}，性能保留 \\textbf{95\\%}；MMLU/GSM8K 较 baseline \\textbf{+4.2\\%}
+\\end{itemize}
+}`;
+
+DF['projects.tex']=`% modules/projects.tex — 项目 + 开源 + 作品集
+
+\\sectionTitle{项目经历}{\\faProjectDiagram}
+
+\\projectCard{自我纠错型 RAG 系统 \\textbullet{} \\texttt{SelfRAG-Agent}}{2024.01 -- 2024.05}
+{企业知识库 Agent，召回率 65\\% → 85\\%，已落地组内生产环境}{%
+\\begin{itemize}
+  \\item \\textbf{技术栈}：LangChain、LlamaIndex、Qdrant、bge-reranker、FastAPI
+  \\item \\textbf{核心方案}：迭代式检索（ReAct 反思）+ 混合检索（向量 + BM25）+ 交叉编码器重排序
+  \\item \\textbf{消融}：MS MARCO / NQ 上 迭代 \\textbf{+15\\%} \\textbullet{} 多策略融合 \\textbf{+3\\%} \\textbullet{} 重排序 \\textbf{+2\\%}
+\\end{itemize}
+}{\\faGithub\\ github.com/hertz/self-rag-agent \\quad \\faGlobe\\ rag.hertz.dev}
+
+\\projectCard{分层记忆长程对话 Agent \\textbullet{} \\texttt{HMem-Agent}}{2023.07 -- 2023.12}
+{受人类记忆机制启发，构建工作 / 短期 / 长期三层记忆架构}{%
+\\begin{itemize}
+  \\item \\textbf{架构}：Working Memory（K 轮原文）+ Short-term（自动摘要）+ Long-term（重要性 + 时间衰减）
+  \\item \\textbf{效果}：信息保留率 \\textbf{92\\%}（vs 68\\%），检索 \\textbf{450ms → 150ms}，100+ 轮对话完成率 \\textbf{+28\\%}
+\\end{itemize}
+}{\\faGithub\\ github.com/hertz/hmem-agent}
+
+\\sectionTitle{开源贡献}{\\faGithub}
+
+\\openSourceItem{hertz/Agent-RL-Framework}{562}{84}{Python}
+{强化学习驱动的 LLM Agent 决策框架（配套 NeurIPS 投稿）}{%
+\\begin{itemize}
+  \\item 集成 PPO / DPO / GRPO，覆盖 ALFWorld / WebShop / SciWorld 三基准；处理 30+ Issues，合并 12 PR
+\\end{itemize}
+}`;
+
+DF['publications.tex']=`% modules/publications.tex — 论文 + 荣誉
+
+\\sectionTitle{论文与专利}{\\faFile*}
+
+\\publicationItem
+{Hierarchical Knowledge Distillation for Compact Large Language Models}
+{\\textbf{Hertz}, Li Si, Wang Wu}
+{NeurIPS 2024 (CCF-A)}
+{\\href{https://arxiv.org/abs/2410.xxxxx}{\\faFilePdf\\ Paper}\\ \\,\\href{https://github.com/hertz/hkd-llm}{\\faGithub\\ Code}}
+
+\\publicationItem
+{Self-Reflective Agents: Reinforcement Learning for Long-Horizon Decision Making}
+{\\textbf{Hertz}, Zhao Liu, Chen Wei}
+{NeurIPS 2026 (under review)}
+{\\href{https://arxiv.org/abs/2510.xxxxx}{\\faFilePdf\\ Preprint}\\ \\,\\href{https://github.com/hertz/agent-rl-framework}{\\faGithub\\ Code}}
+
+\\sectionTitle{荣誉与竞赛}{\\faTrophy}
+
+\\awardItem{Kaggle LLM Science Exam \\textbullet{} 金牌}{2023.08}{Top 1\\%（128/2664），方案被 Kaggle 官方教程引用}
+\\awardItem{清华大学 国家奖学金 / 学业优秀奖学金（一等）}{2023 / 2024}{综合排名前 5\\%，连续两年}
+\\awardItem{GitHub 开源影响力}{2023 -- 至今}{个人开源项目累计 \\textbf{5,000+ Stars}，主仓 \\texttt{Agent-RL-Framework} 562 Stars}`;
+
+// ===== STATE =====
+let S={
+  curFile:'config.tex',
+  theme:'techblue',
+  variant:'main',
+  files:{...DF},
+  mod:false,
+  editMode:'form',
+};
+
+// Undo/Redo history
+const hist={stack:[],idx:-1,max:50};
+function histPush(){
+  hist.idx++;
+  hist.stack=hist.stack.slice(0,hist.idx);
+  hist.stack.push({file:S.curFile,content:S.files[S.curFile]});
+  if(hist.stack.length>hist.max)hist.stack.shift(),hist.idx--;
+}
+function undo(){
+  if(hist.idx<=0){toast('i','没有更多撤销');return}
+  hist.idx--;
+  const snap=hist.stack[hist.idx];
+  S.files[snap.file]=snap.content;
+  if(snap.file===S.curFile){
+    document.getElementById('editor').value=snap.content;
+    highlightUpdate();
+  }
+  markMod();saveLS();
+  if(S.editMode==='form')renderFormEditor();
+  toast('i','撤销');
+}
+function redo(){
+  if(hist.idx>=hist.stack.length-1){toast('i','没有更多重做');return}
+  hist.idx++;
+  const snap=hist.stack[hist.idx];
+  S.files[snap.file]=snap.content;
+  if(snap.file===S.curFile){
+    document.getElementById('editor').value=snap.content;
+    highlightUpdate();
+  }
+  markMod();saveLS();
+  if(S.editMode==='form')renderFormEditor();
+  toast('i','重做');
+}
+
+// Search state
+let searchMatches=[],searchIdx=-1;
+
+// ===== INIT =====
+function init(){
+  loadLS();
+  renderThemes();
+  renderModules();
+  renderVariants();
+  loadFile(S.curFile);
+  syncFormFromConfig();
+  histPush();
+  setupResizer();
+}
+
+function loadLS(){
+  try{
+    const f=localStorage.getItem('rp-files');if(f)S.files=JSON.parse(f);
+    const t=localStorage.getItem('rp-theme');if(t)S.theme=t;
+    const v=localStorage.getItem('rp-variant');if(v)S.variant=v;
+    const gh=localStorage.getItem('rp-gh');if(gh){
+      const c=JSON.parse(gh);
+      document.getElementById('ghToken').value=c.token||'';
+      document.getElementById('ghOwner').value=c.owner||'';
+      document.getElementById('ghRepo').value=c.repo||'LLM-Resume-Template';
+      document.getElementById('ghBranch').value=c.branch||'main';
+    }
+  }catch(e){}
+}
+function saveLS(){
+  try{localStorage.setItem('rp-files',JSON.stringify(S.files));localStorage.setItem('rp-theme',S.theme);localStorage.setItem('rp-variant',S.variant)}catch(e){}
+}
+
+// ===== THEMES =====
+function renderThemes(){
+  document.getElementById('tgrid').innerHTML=THEMES.map(t=>`<button class="tbtn ${t.id===S.theme?'on':''}" onclick="setTheme('${t.id}')"><span class="tdot" style="background:${t.c}"></span>${t.name}</button>`).join('');
+}
+function setTheme(id){
+  S.theme=id;
+  let c=S.files['config.tex'];
+  c=c.replace(/\\settheme\{[^}]+\}/,`\\settheme{${id}}`);
+  c=c.replace(/^\\customtheme/m,'% \\customtheme');
+  S.files['config.tex']=c;
+  if(S.curFile==='config.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  renderThemes();markMod();saveLS();histPush();
+  toast('s',`主题 → ${THEMES.find(t=>t.id===id)?.name}`);
+}
+function applyCustom(){
+  const p=document.getElementById('cp1').value.replace('#','');
+  const s=document.getElementById('cp2').value.replace('#','');
+  const l=document.getElementById('cp3').value.replace('#','');
+  let c=S.files['config.tex'];
+  c=c.replace(/%?\s*\\customtheme\{[^}]+\}\{[^}]+\}\{[^}]+\}/,`\\customtheme{${p}}{${s}}{${l}}`);
+  c=c.replace(/\\settheme\{[^}]+\}/,`% \\settheme{techblue}`);
+  S.files['config.tex']=c;
+  if(S.curFile==='config.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  S.theme='custom';renderThemes();markMod();saveLS();histPush();
+  toast('s','自定义主题已应用');
+}
+
+// ===== VARIANTS =====
+function renderVariants(){
+  document.getElementById('vlist').innerHTML=VARIANTS.map(v=>`<button class="vbtn ${v.id===S.variant?'on':''}" onclick="setVariant('${v.id}')"><span class="vi">${v.icon}</span><span class="vn">${v.name}</span><span class="vs">${v.desc}</span></button>`).join('');
+}
+function setVariant(id){
+  S.variant=id;
+  const v=VARIANTS.find(x=>x.id===id);
+  if(v){
+    const opts=v.opts.split(',');
+    document.getElementById('cfgLang').value=opts.includes('en')?'en':'zh';
+    document.getElementById('cfgCompact').value=opts.includes('compact')?'compact':'';
+    document.getElementById('cfgMono').value=opts.includes('monochrome')?'monochrome':'';
+    document.getElementById('cfgFooter').value=opts.includes('nofooter')?'nofooter':'';
+    if(v.theme&&v.theme!==S.theme)setTheme(v.theme);
+    syncCfg();
+  }
+  renderVariants();saveLS();histPush();
+  toast('i',`变体 → ${v?.name}`);
+}
+
+// ===== MODULES =====
+function renderModules(){
+  document.getElementById('mlist').innerHTML=MODULES.map(m=>`<li class="mitem ${m.on?'on':''}" onclick="swFile(null,'${m.file.replace('modules/','')}')"><span class="mi">${m.icon}</span><span class="mn">${m.name}</span><span class="tgl ${m.on?'on':''}" onclick="event.stopPropagation();togMod('${m.id}')"></span></li>`).join('');
+}
+function togMod(id){const m=MODULES.find(x=>x.id===id);if(m)m.on=!m.on;renderModules();markMod();histPush();}
+
+// ===== TABS =====
+function setTab(i){
+  document.querySelectorAll('.tab').forEach((t,idx)=>{t.classList.toggle('on',idx===i)});
+  document.querySelectorAll('.tab-panel').forEach((p,idx)=>{p.classList.toggle('on',idx===i)});
+}
+
+// ===== SYNTAX HIGHLIGHTING =====
+function highlightLatex(code){
+  // First escape HTML, then apply highlighting in order:
+  // 1. Comments (must be first to prevent other rules from coloring comment content)
+  // 2. Commands, 3. Environments, 4. Braces, 5. Special chars
+  return esc(code)
+    .replace(/(%[^\n]*)/g,'<span style="color:var(--text3)">$1</span>')
+    .replace(/(\\[a-zA-Z]+)/g,'<span style="color:var(--cyan)">$1</span>')
+    .replace(/(\\begin\{[^}]+\}|\\end\{[^}]+\}|\\sectionTitle\{[^}]+\}|\\item)/g,'<span style="color:var(--green)">$1</span>')
+    .replace(/(\{[^}]{0,80}\})/g,'<span style="color:var(--orange)">$1</span>')
+    .replace(/(&amp;|&lt;|&gt;)/g,'<span style="color:var(--red)">$1</span>');
+}
+function highlightUpdate(){
+  const hl=document.getElementById('highlight');
+  if(hl)hl.innerHTML=highlightLatex(document.getElementById('editor').value)+'\n';
+}
+
+// ===== EDITOR =====
+function loadFile(name){
+  // Save current file first
+  if(S.curFile&&S.curFile!==name){
+    S.files[S.curFile]=document.getElementById('editor').value;
+  }
+  S.curFile=name;
+  const ed=document.getElementById('editor');
+  ed.value=S.files[name]||'';
+  document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===name));
+  highlightUpdate();
+  setSt('ok','已保存');S.mod=false;
+  updChars();
+  if(S.editMode==='form')renderFormEditor();
+}
+function swFile(btn,fn){
+  S.files[S.curFile]=document.getElementById('editor').value;
+  saveLS();
+  const name=fn||btn?.dataset.f;
+  if(name)loadFile(name);
+}
+function markMod(){S.mod=true;setSt('mod','已修改');}
+function setSt(t,txt){const d=document.getElementById('sdot');d.className='sdot '+t;document.getElementById('stxt').textContent=txt;}
+function updChars(){
+  const v=document.getElementById('editor').value;
+  document.getElementById('chars').textContent=`${v.length} 字符 · ${v.split('\n').length} 行`;
+}
+
+// Debounced sync for personal info fields
+let cfgTimer;
+function debouncedSyncCfg(){clearTimeout(cfgTimer);cfgTimer=setTimeout(syncCfg,400)}
+
+// Auto-save
+let stm;
+document.addEventListener('DOMContentLoaded',()=>{
+  const ed=document.getElementById('editor');
+
+  ed.addEventListener('input',()=>{
+    S.files[S.curFile]=ed.value;
+    highlightUpdate();
+    markMod();
+    updChars();
+    clearTimeout(stm);
+    stm=setTimeout(()=>{
+      saveLS();histPush();setSt('ok','已自动保存');S.mod=false;
+    },1200);
+  });
+
+  ed.addEventListener('scroll',()=>{
+    document.getElementById('highlight').scrollTop=ed.scrollTop;
+    document.getElementById('highlight').scrollLeft=ed.scrollLeft;
+  });
+
+  ed.addEventListener('keyup',updPos);
+  ed.addEventListener('click',updPos);
+
+  ed.addEventListener('keydown',e=>{
+    if(e.key==='Tab'){
+      e.preventDefault();
+      const s=ed.selectionStart,en=ed.selectionEnd;
+      ed.value=ed.value.substring(0,s)+'  '+ed.value.substring(en);
+      ed.selectionStart=ed.selectionEnd=s+2;
+      ed.dispatchEvent(new Event('input'));
+    }
+    // Ctrl+A bracket wrapping
+    if(e.key==='{'&&(e.metaKey||e.ctrlKey)){
+      e.preventDefault();
+      wrapSelection('{','}');
+    }
+  });
+});
+
+function wrapSelection(before,after){
+  const ed=document.getElementById('editor');
+  const s=ed.selectionStart,en=ed.selectionEnd;
+  const sel=ed.value.substring(s,en);
+  ed.value=ed.value.substring(0,s)+before+sel+after+ed.value.substring(en);
+  ed.selectionStart=s+before.length;
+  ed.selectionEnd=en+before.length;
+  ed.dispatchEvent(new Event('input'));
+}
+
+function updPos(){
+  const ed=document.getElementById('editor');
+  const v=ed.value.substring(0,ed.selectionStart);
+  const ls=v.split('\n');
+  document.getElementById('cpos').textContent=`行 ${ls.length}, 列 ${ls[ls.length-1].length+1}`;
+}
+
+// ===== SEARCH & REPLACE =====
+function toggleSearch(){
+  const bar=document.getElementById('searchBar');
+  bar.classList.toggle('show');
+  if(bar.classList.contains('show')){
+    document.getElementById('searchInput').focus();
+    // Pre-fill with selection
+    const sel=document.getElementById('editor').value.substring(
+      document.getElementById('editor').selectionStart,
+      document.getElementById('editor').selectionEnd
+    );
+    if(sel)document.getElementById('searchInput').value=sel;
+    doSearch();
+  }else{
+    searchMatches=[];searchIdx=-1;
+    document.getElementById('searchCount').textContent='';
+  }
+}
+function doSearch(){
+  const q=document.getElementById('searchInput').value;
+  if(!q){searchMatches=[];document.getElementById('searchCount').textContent='';return}
+  const code=document.getElementById('editor').value;
+  searchMatches=[];
+  let pos=0;
+  while(true){
+    const idx=code.indexOf(q,pos);
+    if(idx===-1)break;
+    searchMatches.push(idx);
+    pos=idx+1;
+  }
+  searchIdx=searchMatches.length>0?0:-1;
+  document.getElementById('searchCount').textContent=searchMatches.length?`${searchIdx+1}/${searchMatches.length}`:'无结果';
+  highlightMatch();
+}
+function findNext(){
+  if(!searchMatches.length)return;
+  searchIdx=(searchIdx+1)%searchMatches.length;
+  document.getElementById('searchCount').textContent=`${searchIdx+1}/${searchMatches.length}`;
+  highlightMatch();
+}
+function findPrev(){
+  if(!searchMatches.length)return;
+  searchIdx=(searchIdx-1+searchMatches.length)%searchMatches.length;
+  document.getElementById('searchCount').textContent=`${searchIdx+1}/${searchMatches.length}`;
+  highlightMatch();
+}
+function highlightMatch(){
+  if(searchIdx<0||!searchMatches.length)return;
+  const ed=document.getElementById('editor');
+  const q=document.getElementById('searchInput').value;
+  ed.focus();
+  ed.setSelectionRange(searchMatches[searchIdx],searchMatches[searchIdx]+q.length);
+  // Scroll to selection
+  const tmp=ed.value.substring(0,searchMatches[searchIdx]);
+  const lineNum=tmp.split('\n').length;
+  ed.scrollTop=Math.max(0,(lineNum-5)*20);
+}
+function doReplace(){
+  if(searchIdx<0)return;
+  const ed=document.getElementById('editor');
+  const q=document.getElementById('searchInput').value;
+  const r=document.getElementById('replaceInput').value;
+  const pos=searchMatches[searchIdx];
+  ed.value=ed.value.substring(0,pos)+r+ed.value.substring(pos+q.length);
+  S.files[S.curFile]=ed.value;
+  ed.dispatchEvent(new Event('input'));
+  markMod();saveLS();histPush();
+  doSearch();
+}
+function doReplaceAll(){
+  const q=document.getElementById('searchInput').value;
+  const r=document.getElementById('replaceInput').value;
+  if(!q){toast('i','请输入搜索内容');return}
+  const ed=document.getElementById('editor');
+  const before=ed.value;
+  const after=before.split(q).join(r);
+  if(after===before){toast('i','未找到匹配');return}
+  const count=before.split(q).length-1;
+  ed.value=after;
+  S.files[S.curFile]=after;
+  ed.dispatchEvent(new Event('input'));
+  doSearch();
+  markMod();saveLS();histPush();
+  toast('s',`替换了 ${count} 处`);
+}
+
+// ===== RESIZER =====
+function setupResizer(){
+  const resizer=document.getElementById('resizer');
+  const pvArea=document.getElementById('pvArea');
+  let startX,startW;
+  function onMove(e){
+    const dx=e.clientX-startX;
+    const newW=Math.max(200,startW-dx);
+    pvArea.style.width=newW+'px';
+  }
+  function onUp(){
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+    resizer.classList.remove('active');
+  }
+  resizer.addEventListener('mousedown',e=>{
+    startX=e.clientX;
+    startW=pvArea.offsetWidth;
+    resizer.classList.add('active');
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  });
+}
+
+// ===== MODE TOGGLE =====
+function setMode(m){
+  S.editMode=m;
+  document.getElementById('modeForm').classList.toggle('on',m==='form');
+  document.getElementById('modeCode').classList.toggle('on',m==='code');
+  document.getElementById('codeWrap').style.display=m==='code'?'block':'none';
+  document.getElementById('highlight').style.display=m==='code'?'block':'none';
+  document.getElementById('formWrap').classList.toggle('on',m==='form');
+  if(m==='form'){
+    S.files[S.curFile]=document.getElementById('editor').value;
+    renderFormEditor();
+  }else{
+    // Sync form changes back to code editor
+    document.getElementById('editor').value=S.files[S.curFile]||'';
+    highlightUpdate();
+    updChars();
+  }
+}
+
+// ===== FORM EDITOR =====
+function renderFormEditor(){
+  const f=S.curFile;
+  const fw=document.getElementById('formWrap');
+  if(f==='config.tex'){fw.innerHTML=renderConfigForm();return}
+  if(f==='header.tex'){fw.innerHTML=renderHeaderForm();return}
+  if(f==='skills.tex'){fw.innerHTML=renderSkillsForm();return}
+  if(f==='experience.tex'){fw.innerHTML=renderExpForm();return}
+  if(f==='education.tex'){fw.innerHTML=renderEduForm();return}
+  if(f==='projects.tex'){fw.innerHTML=renderProjForm();return}
+  if(f==='publications.tex'){fw.innerHTML=renderPubForm();return}
+  fw.innerHTML=`<div style="padding:14px;color:var(--text2);font-size:12px"><p>此文件暂不支持表单编辑，请切换到「💻 代码」模式</p><pre style="margin-top:10px;background:var(--bg2);padding:10px;border-radius:6px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;color:var(--text)">${esc(S.files[f]||'')}</pre></div>`;
+}
+
+function renderConfigForm(){
+  const c=S.files['config.tex']||'';
+  const gv=re=>{const m=c.match(re);return m?m[1]:''};
+  return `<div class="form-group"><div class="form-group-title">👤 个人信息</div>
+    <div class="form-row"><div class="fld"><label>姓名</label><input value="${esc(gv(/\\\\name\{([^}]*)\}/))}" onchange="updCfg('name',this.value)"></div><div class="fld"><label>职位标签</label><input value="${esc(gv(/\\\\tagline\{([^}]*)\}/))}" onchange="updCfg('tagline',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>电话</label><input value="${esc(gv(/\\\\phone\{([^}]*)\}/))}" onchange="updCfg('phone',this.value)"></div><div class="fld"><label>邮箱</label><input value="${esc(gv(/\\\\email\{([^}]*)\}/))}" onchange="updCfg('email',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>GitHub</label><input value="${esc(gv(/\\\\github\{([^}]*)\}/))}" onchange="updCfg('github',this.value)"></div><div class="fld"><label>LinkedIn</label><input value="${esc(gv(/\\\\linkedin\{([^}]*)\}/))}" onchange="updCfg('linkedin',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>网站</label><input value="${esc(gv(/\\\\website\{([^}]*)\}/))}" onchange="updCfg('website',this.value)"></div><div class="fld"><label>博客</label><input value="${esc(gv(/\\\\blog\{([^}]*)\}/))}" onchange="updCfg('blog',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>所在地</label><input value="${esc(gv(/\\\\location\{([^}]*)\}/))}" onchange="updCfg('location',this.value)"></div><div class="fld"><label>关键词</label><input value="${esc(gv(/\\\\keywords\{([^}]*)\}/))}" onchange="updCfg('keywords',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>微信</label><input value="${esc(gv(/\\\\wechat\{([^}]*)\}/))}" onchange="updCfg('wechat',this.value)"></div><div class="fld"><label>知乎</label><input value="${esc(gv(/\\\\zhihu\{([^}]*)\}/))}" onchange="updCfg('zhihu',this.value)"></div></div>
+  </div>
+  <div class="form-group"><div class="form-group-title">📷 头像设置</div>
+    <div class="form-row"><div class="fld"><label>形状</label><select onchange="updCfg('photoshape',this.value)"><option value="circular" ${gv(/\\\\photoshape\{([^}]*)\}/)==='circular'?'selected':''}>圆形</option><option value="square" ${gv(/\\\\photoshape\{([^}]*)\}/)==='square'?'selected':''}>方形</option></select></div><div class="fld"><label>路径</label><input value="${esc(gv(/\\\\photo\{([^}]*)\}/))}" onchange="updCfg('photo',this.value)"></div></div>
+  </div>`;
+}
+
+function renderHeaderForm(){
+  const c=S.files['header.tex']||'';
+  const absM=c.match(/\\begin\{abstract\}([\s\S]*?)\\end\{abstract\}/);
+  const abs=absM?absM[1].trim():'';
+  return `<div class="form-group"><div class="form-group-title">📝 个人摘要</div>
+    <div class="fld"><label>摘要内容（支持 LaTeX 标记）</label><textarea rows="6" style="width:100%;font-size:12px;font-family:var(--mono);line-height:1.6" onchange="updHeader(this.value)">${esc(abs)}</textarea></div>
+    <p style="font-size:10px;color:var(--text3);margin-top:4px">💡 使用 \\textbf{文字} 加粗，\\% 表示百分号，\\textbullet{} 分隔</p>
+  </div>`;
+}
+
+function renderSkillsForm(){
+  const c=S.files['skills.tex']||'';
+  const rows=[...c.matchAll(/\\skillrow\{([^}]*)\}\{([^}]*)\}/g)];
+  let html='<div class="form-group"><div class="form-group-title">💻 技能条目</div>';
+  rows.forEach((m,i)=>{
+    html+=`<div class="form-item"><button class="del" onclick="delSkillRow(${i})">✕</button>
+      <div class="form-row"><div class="fld"><label>分类</label><input value="${esc(m[1])}" onchange="updSkillRow(${i},0,this.value)"></div></div>
+      <div class="fld"><label>内容（支持 \\skilltag{} \\skilltagAccent{} 标签）</label><input value="${esc(m[2])}" onchange="updSkillRow(${i},1,this.value)"></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addSkillRow()">+ 添加技能分类</button></div>`;
+  return html;
+}
+
+function renderEduForm(){
+  const c=S.files['education.tex']||'';
+  // Parse education items with their detail blocks
+  const items=[...c.matchAll(/\\educationItem(?:\[([^\]]*)\])?\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?/g)];
+  let html='<div class="form-group"><div class="form-group-title">🎓 教育经历</div>';
+  items.forEach((m,i)=>{
+    const detail=m[6]?m[6].replace(/^\s*\\item\s*/gm,'').trim():'';
+    html+=`<div class="form-item"><button class="del" onclick="delEdu(${i})">✕</button>
+      <div class="form-row"><div class="fld"><label>学校</label><input value="${esc(m[2])}" onchange="updEduField(${i},'school',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[3])}" onchange="updEduField(${i},'time',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>专业</label><input value="${esc(m[4])}" onchange="updEduField(${i},'major',this.value)"></div><div class="fld"><label>备注</label><input value="${esc(m[5])}" onchange="updEduField(${i},'note',this.value)"></div></div>
+      <div class="fld"><label>详细说明（每行一条）</label><textarea rows="3" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updEduField(${i},'detail',this.value)">${esc(detail)}</textarea></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addEdu()">+ 添加教育经历</button></div>`;
+  return html;
+}
+
+function renderExpForm(){
+  const c=S.files['experience.tex']||'';
+  // Parse sections and experience items
+  const sections=[...c.matchAll(/\\sectionTitle\{([^}]*)\}\{[^}]*\}/g)];
+  const items=[...c.matchAll(/\\experienceItem(?:\[([^\]]*)\])?\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*?)(?:\}%?\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})/g)];
+
+  let html='<div class="form-group"><div class="form-group-title">💼 经历条目</div>';
+
+  items.forEach((m,i)=>{
+    const detail=m[6]?m[6].replace(/^\s*\\item\s*/gm,'').trim():'';
+    html+=`<div class="form-item"><button class="del" onclick="delExp(${i})">✕</button>
+      <div class="form-row"><div class="fld"><label>公司/机构</label><input value="${esc(m[2])}" onchange="updExpField(${i},'org',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[3])}" onchange="updExpField(${i},'time',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>职位</label><input value="${esc(m[4])}" onchange="updExpField(${i},'title',this.value)"></div></div>
+      <div class="fld"><label>工作内容（每行一条，自动转 itemize）</label><textarea rows="4" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updExpField(${i},'detail',this.value)">${esc(detail)}</textarea></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addExp()">+ 添加经历</button></div>`;
+  return html;
+}
+
+function renderProjForm(){
+  const c=S.files['projects.tex']||'';
+  const items=[...c.matchAll(/\\projectCard\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*?)(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?\}\{([^}]*)\}/g)];
+  let html='<div class="form-group"><div class="form-group-title">🔧 项目经历</div>';
+  items.forEach((m,i)=>{
+    const detail=m[5]?m[5].replace(/^\s*\\item\s*/gm,'').trim():'';
+    html+=`<div class="form-item"><button class="del" onclick="delProj(${i})">✕</button>
+      <div class="form-row"><div class="fld"><label>项目名</label><input value="${esc(m[1])}" onchange="updProjField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[2])}" onchange="updProjField(${i},'time',this.value)"></div></div>
+      <div class="fld"><label>简介</label><input value="${esc(m[3])}" onchange="updProjField(${i},'desc',this.value)"></div>
+      <div class="fld"><label>详细说明（每行一条）</label><textarea rows="3" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updProjField(${i},'detail',this.value)">${esc(detail)}</textarea></div>
+      <div class="fld"><label>链接</label><input value="${esc(m[6]||'')}" onchange="updProjField(${i},'links',this.value)"></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addProj()">+ 添加项目</button></div>`;
+  return html;
+}
+
+function renderPubForm(){
+  const c=S.files['publications.tex']||'';
+  const pubs=[...c.matchAll(/\\publicationItem\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/g)];
+  const awards=[...c.matchAll(/\\awardItem\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}/g)];
+  let html='<div class="form-group"><div class="form-group-title">📝 论文</div>';
+  pubs.forEach((m,i)=>{
+    html+=`<div class="form-item"><button class="del" onclick="delPub(${i})">✕</button>
+      <div class="fld"><label>标题</label><input value="${esc(m[1])}" onchange="updPubField(${i},'title',this.value)"></div>
+      <div class="form-row"><div class="fld"><label>作者</label><input value="${esc(m[2])}" onchange="updPubField(${i},'authors',this.value)"></div><div class="fld"><label>venue</label><input value="${esc(m[3])}" onchange="updPubField(${i},'venue',this.value)"></div></div>
+      <div class="fld"><label>链接</label><input value="${esc(m[4])}" onchange="updPubField(${i},'links',this.value)"></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addPub()">+ 添加论文</button></div>`;
+
+  html+='<div class="form-group"><div class="form-group-title">🏆 荣誉</div>';
+  awards.forEach((m,i)=>{
+    html+=`<div class="form-item"><button class="del" onclick="delAward(${i})">✕</button>
+      <div class="form-row"><div class="fld"><label>奖项</label><input value="${esc(m[1])}" onchange="updAwardField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[2])}" onchange="updAwardField(${i},'time',this.value)"></div></div>
+      <div class="fld"><label>说明</label><input value="${esc(m[3])}" onchange="updAwardField(${i},'desc',this.value)"></div></div>`;
+  });
+  html+=`<button class="add-btn" onclick="addAward()">+ 添加荣誉</button></div>`;
+  return html;
+}
+
+// ===== FORM UPDATE HELPERS =====
+function updCfg(key,val){
+  let c=S.files['config.tex'];
+  // Escape special regex chars in val for safe replacement
+  const escapedVal=val.replace(/\\/g,'\\\\');
+  const re=new RegExp(`\\\\${key}\\{[^}]*\\}`);
+  if(re.test(c)){
+    c=c.replace(re,`\\${key}{${val}}`);
+  }else{
+    // Add commented-out field
+    const cre=new RegExp(`%\\s*\\\\${key}\\{[^}]*\\}`);
+    if(cre.test(c)){
+      c=c.replace(cre,`\\${key}{${val}}`);
+    }
+  }
+  S.files['config.tex']=c;
+  if(S.curFile==='config.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();
+  // Don't call syncFormFromConfig here to avoid re-rendering the form during user input
+}
+function updHeader(val){
+  let c=S.files['header.tex'];
+  c=c.replace(/\\begin\{abstract\}[\s\S]*?\\end\{abstract\}/,`\\begin{abstract}\n${val}\n\\end{abstract}`);
+  S.files['header.tex']=c;
+  if(S.curFile==='header.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+
+function updSkillRow(i,fi,val){
+  const c=S.files['skills.tex'];
+  const rows=[...c.matchAll(/\\skillrow\{([^}]*)\}\{([^}]*)\}/g)];
+  if(rows[i]){
+    const old=rows[i][0];
+    const nv=fi===0?`\\skillrow{${val}}{${rows[i][2]}}`:`\\skillrow{${rows[i][1]}}{${val}}`;
+    // Use indexOf + substring for exact replacement (avoid regex special chars in val)
+    const idx=c.indexOf(old);
+    if(idx!==-1){
+      S.files['skills.tex']=c.substring(0,idx)+nv+c.substring(idx+old.length);
+    }else{
+      S.files['skills.tex']=c.replace(old,nv);
+    }
+    if(S.curFile==='skills.tex'){document.getElementById('editor').value=S.files['skills.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();
+  }
+}
+function addSkillRow(){
+  let c=S.files['skills.tex'];
+  c=c.trimEnd()+`\n\\skillrow{新分类}{\\skilltag{技能1} \\skilltag{技能2}}`;
+  S.files['skills.tex']=c;
+  if(S.curFile==='skills.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delSkillRow(i){
+  const c=S.files['skills.tex'];
+  const rows=[...c.matchAll(/\\skillrow\{[^}]*\}\{[^}]*\}/g)];
+  if(rows[i]){
+    S.files['skills.tex']=c.replace(rows[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='skills.tex'){document.getElementById('editor').value=S.files['skills.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+// Education form helpers
+function updEduField(i,field,val){
+  const c=S.files['education.tex'];
+  const items=[...c.matchAll(/(\\educationItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?)/g)];
+  if(!items[i])return;
+  let item=items[i][0];
+
+  if(field==='detail'){
+    // Rebuild itemize block
+    const lines=val.split('\n').filter(l=>l.trim());
+    const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
+    // Remove existing itemize
+    item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
+    item=item.trimEnd()+itemize;
+    S.files['education.tex']=c.replace(items[i][0],item);
+    if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();return;
+  }
+
+  // For other fields, rebuild the educationItem (without itemize)
+  const logoMatch=item.match(/\[([^\]]+)\]/);
+  const logo=logoMatch?`[${logoMatch[1]}]`:'';
+  const bareItem=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'').trim();
+  const parts=[...bareItem.matchAll(/\{([^}]*)\}/g)].map(m=>m[1]);
+
+  switch(field){
+    case 'school':parts[0]=val;break;
+    case 'time':parts[1]=val;break;
+    case 'major':parts[2]=val;break;
+    case 'note':parts[3]=val;break;
+  }
+
+  // Preserve itemize block
+  const itemizeMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
+  const itemizeBlock=itemizeMatch?itemizeMatch[1]:'';
+  const newItem=`\\educationItem${logo}{${parts[0]}}{${parts[1]}}{${parts[2]}}{${parts[3]}}${itemizeBlock}`;
+
+  S.files['education.tex']=c.replace(items[i][0],newItem);
+  if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+function addEdu(){
+  let c=S.files['education.tex'];
+  c=c.trimEnd()+`\n\n\\educationItem{学校名}{20XX.XX -- 20XX.XX}{专业 · 学位}{附注}`;
+  S.files['education.tex']=c;
+  if(S.curFile==='education.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delEdu(i){
+  const c=S.files['education.tex'];
+  const items=[...c.matchAll(/(\\educationItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?)/g)];
+  if(items[i]){
+    S.files['education.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+// Experience form helpers
+function updExpField(i,field,val){
+  const c=S.files['experience.tex'];
+  const items=[...c.matchAll(/(\\experienceItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\})/g)];
+  if(!items[i])return;
+  let item=items[i][0];
+
+  if(field==='detail'){
+    const lines=val.split('\n').filter(l=>l.trim());
+    const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
+    item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
+    item=item.trimEnd()+itemize;
+    S.files['experience.tex']=c.replace(items[i][0],item);
+    if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();return;
+  }
+
+  // Parse and rebuild for other fields
+  const logoMatch=item.match(/\[([^\]]+)\]/);
+  const logo=logoMatch?`[${logoMatch[1]}]`:'';
+  const bareItem=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'').trim();
+  // Extract the 4 fields: org, time, title, desc (the last {..}% block)
+  const fieldMatches=[...bareItem.matchAll(/\{([^}]*)\}/g)].map(m=>m[1]);
+  const org=fieldMatches[0]||'';
+  const time=fieldMatches[1]||'';
+  const title=fieldMatches[2]||'';
+  const desc=fieldMatches[3]||'';
+
+  let newOrg=org,newTime=time,newTitle=title,newDesc=desc;
+  switch(field){
+    case 'org':newOrg=val;break;
+    case 'time':newTime=val;break;
+    case 'title':newTitle=val;break;
+    case 'desc':newDesc=val;break;
+  }
+
+  // Preserve itemize block
+  const itemizeMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
+  const itemizeBlock=itemizeMatch?itemizeMatch[1]:'';
+  const newItem=`\\experienceItem${logo}{${newOrg}}{${newTime}}{${newTitle}}{${newDesc}%${itemizeBlock}\n}\n`;
+
+  S.files['experience.tex']=c.replace(items[i][0],newItem);
+  if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+function addExp(){
+  let c=S.files['experience.tex'];
+  c=c.trimEnd()+`\n\n\\experienceItem{公司名}{20XX.XX -- 20XX.XX}{职位}{%\n\\begin{itemize}\n  \\item 工作内容\n\\end{itemize}\n}\n`;
+  S.files['experience.tex']=c;
+  if(S.curFile==='experience.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delExp(i){
+  const c=S.files['experience.tex'];
+  const items=[...c.matchAll(/(\\experienceItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\})/g)];
+  if(items[i]){
+    S.files['experience.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+// Project form helpers
+function updProjField(i,field,val){
+  const c=S.files['projects.tex'];
+  const items=[...c.matchAll(/(\\projectCard\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?\}\{([^}]*)\})/g)];
+  if(!items[i])return;
+  let item=items[i][0];
+  let name=items[i][2],time=items[i][3],desc=items[i][4],detail=items[i][5]||'',links=items[i][6]||'';
+
+  switch(field){
+    case 'name':name=val;break;
+    case 'time':time=val;break;
+    case 'desc':desc=val;break;
+    case 'links':links=val;break;
+    case 'detail':
+      const lines=val.split('\n').filter(l=>l.trim());
+      const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
+      // Remove existing itemize and rebuild
+      item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
+      // Rebuild the projectCard with new itemize
+      const newItem=`\\projectCard{${name}}{${time}}\n{${desc}}{%${itemize?itemize:''}\n}{${links}}`;
+      S.files['projects.tex']=c.replace(items[i][0],newItem);
+      if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
+      markMod();saveLS();histPush();return;
+  }
+
+  // Rebuild for non-detail fields
+  const detailMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
+  const itemizeBlock=detailMatch?detailMatch[1]:'';
+  const newItem=`\\projectCard{${name}}{${time}}\n{${desc}}{%${itemizeBlock}\n}{${links}}`;
+
+  S.files['projects.tex']=c.replace(items[i][0],newItem);
+  if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+function addProj(){
+  let c=S.files['projects.tex'];
+  c=c.trimEnd()+`\n\n\\projectCard{项目名}{20XX.XX -- 20XX.XX}\n{项目简介}{%\n\\begin{itemize}\n  \\item 详细说明\n\\end{itemize}\n}{\\faGithub\\ github.com/user/project}`;
+  S.files['projects.tex']=c;
+  if(S.curFile==='projects.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delProj(i){
+  const c=S.files['projects.tex'];
+  const items=[...c.matchAll(/(\\projectCard\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\}\{[^}]*\})/g)];
+  if(items[i]){
+    S.files['projects.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+// Publication form helpers
+function updPubField(i,field,val){
+  const c=S.files['publications.tex'];
+  const pubs=[...c.matchAll(/(\\publicationItem\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\})/g)];
+  if(!pubs[i])return;
+  let title=pubs[i][2],authors=pubs[i][3],venue=pubs[i][4],links=pubs[i][5];
+
+  switch(field){
+    case 'title':title=val;break;
+    case 'authors':authors=val;break;
+    case 'venue':venue=val;break;
+    case 'links':links=val;break;
+  }
+
+  const newItem=`\\publicationItem\n{${title}}\n{${authors}}\n{${venue}}\n{${links}}`;
+  S.files['publications.tex']=c.replace(pubs[i][0],newItem);
+  if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+function addPub(){
+  let c=S.files['publications.tex'];
+  c=c.trimEnd()+`\n\n\\publicationItem\n{Paper Title}\n{\\textbf{Author Name}, Co-author}\n{Conference Year}\n{\\faFilePdf\\ Paper}`;
+  S.files['publications.tex']=c;
+  if(S.curFile==='publications.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delPub(i){
+  const c=S.files['publications.tex'];
+  const pubs=[...c.matchAll(/(\\publicationItem\s*\{[^}]*\}\s*\{[^}]*\}\s*\{[^}]*\}\s*\{[^}]*\})/g)];
+  if(pubs[i]){
+    S.files['publications.tex']=c.replace(pubs[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+function updAwardField(i,field,val){
+  const c=S.files['publications.tex'];
+  const awards=[...c.matchAll(/(\\awardItem\{([^}]*)\}\{([^}]*)\}\{([^}]*)\})/g)];
+  if(!awards[i])return;
+  let name=awards[i][2],time=awards[i][3],desc=awards[i][4];
+
+  switch(field){
+    case 'name':name=val;break;
+    case 'time':time=val;break;
+    case 'desc':desc=val;break;
+  }
+
+  const newItem=`\\awardItem{${name}}{${time}}{${desc}}`;
+  S.files['publications.tex']=c.replace(awards[i][0],newItem);
+  if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+function addAward(){
+  let c=S.files['publications.tex'];
+  c=c.trimEnd()+`\n\n\\awardItem{奖项名称}{年份}{说明}`;
+  S.files['publications.tex']=c;
+  if(S.curFile==='publications.tex'){document.getElementById('editor').value=c;highlightUpdate()}
+  markMod();saveLS();histPush();renderFormEditor();
+}
+function delAward(i){
+  const c=S.files['publications.tex'];
+  const awards=[...c.matchAll(/(\\awardItem\{[^}]*\}\{[^}]*\}\{[^}]*\})/g)];
+  if(awards[i]){
+    S.files['publications.tex']=c.replace(awards[i][0],'').replace(/\n{3,}/g,'\n\n');
+    if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
+    markMod();saveLS();histPush();renderFormEditor();
+  }
+}
+
+// ===== CONFIG SYNC =====
+function syncFormFromConfig(){
+  const c=S.files['config.tex']||'';
+  const gv=re=>{const m=c.match(re);return m?m[1]:''};
+  const ids=['fName','fTagline','fKeywords','fPhone','fEmail','fGithub','fLinkedin','fWebsite','fBlog','fLocation','fWechat','fZhihu'];
+  const keys=['name','tagline','keywords','phone','email','github','linkedin','website','blog','location','wechat','zhihu'];
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el)el.value=gv(new RegExp(`\\\\${keys[i]}\\{([^}]*)\\}`));
+  });
+}
+function syncCfg(){
+  const c=S.files['config.tex']||'';
+  const ups={name:'fName',tagline:'fTagline',keywords:'fKeywords',phone:'fPhone',email:'fEmail',github:'fGithub',linkedin:'fLinkedin',website:'fWebsite',blog:'fBlog',location:'fLocation',wechat:'fWechat',zhihu:'fZhihu'};
+  let nc=c;
+  for(const[k,id]of Object.entries(ups)){
+    const v=document.getElementById(id)?.value;
+    if(v!==undefined&&v!==''){
+      const re=new RegExp(`\\\\${k}\\{[^}]*\\}`);
+      if(re.test(nc)){
+        nc=nc.replace(re,`\\${k}{${v}}`);
+      }else{
+        // Handle commented-out fields
+        const cre=new RegExp(`%\\s*\\\\${k}\\{[^}]*\\}`);
+        if(cre.test(nc))nc=nc.replace(cre,`\\${k}{${v}}`);
+      }
+    }
+  }
+  S.files['config.tex']=nc;
+  if(S.curFile==='config.tex'){document.getElementById('editor').value=nc;highlightUpdate()}
+  markMod();saveLS();histPush();
+}
+
+// ===== SIDEBAR / PREVIEW =====
+function togSide(){document.getElementById('side').classList.toggle('off')}
+function togPv(){document.getElementById('pvArea').classList.toggle('off')}
+function togSec(el){el.classList.toggle('shut');el.nextElementSibling.classList.toggle('off')}
+
+function refreshPv(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const base=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}`:'';
+  if(base){
+    document.getElementById('pvBody').innerHTML=`<iframe src="${base}/preview.html" style="width:100%;height:100%;border:none"></iframe>`;
+    toast('i','正在加载 PDF 预览...');
+  }else{
+    document.getElementById('pvBody').innerHTML=`<iframe src="preview.html" style="width:100%;height:100%;border:none"></iframe>`;
+  }
+}
+function fullPv(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const base=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}`:'';
+  window.open(base?`${base}/preview.html`:'preview.html','_blank');
+}
+
+// ===== GITHUB =====
+function showGH(){document.getElementById('ghModal').classList.add('show')}
+function closeM(id){document.getElementById(id).classList.remove('show')}
+function saveGH(){
+  localStorage.setItem('rp-gh',JSON.stringify({token:document.getElementById('ghToken').value,owner:document.getElementById('ghOwner').value,repo:document.getElementById('ghRepo').value,branch:document.getElementById('ghBranch').value}));
+  closeM('ghModal');toast('s','GitHub 配置已保存');
+}
+
+async function build(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  if(!gh.token||!gh.owner){showGH();toast('i','请先配置 GitHub Token');return}
+  S.files[S.curFile]=document.getElementById('editor').value;saveLS();
+  toast('i','正在提交到 GitHub...');
+  try{
+    const fileMap={'config.tex':'latex_resume_pro/config.tex','header.tex':'latex_resume_pro/modules/header.tex','skills.tex':'latex_resume_pro/modules/skills.tex','education.tex':'latex_resume_pro/modules/education.tex','experience.tex':'latex_resume_pro/modules/experience.tex','projects.tex':'latex_resume_pro/modules/projects.tex','publications.tex':'latex_resume_pro/modules/publications.tex'};
+    const activeMods=MODULES.filter(m=>m.on);
+    const mainTex=genMainTex(activeMods);
+    const filesToCommit={'latex_resume_pro/resume-pro-zh.tex':mainTex};
+    for(const[local,repo]of Object.entries(fileMap)){if(S.files[local])filesToCommit[repo]=S.files[local]}
+    const hdr={'Authorization':`token ${gh.token}`,'Accept':'application/vnd.github.v3+json'};
+    const refR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/ref/heads/${gh.branch}`,{headers:hdr});
+    if(!refR.ok)throw new Error(`获取分支引用失败: ${refR.status} ${await refR.text()}`);
+    const refD=await refR.json();const baseSha=refD.object.sha;
+    const commitR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/commits/${baseSha}`,{headers:hdr});
+    if(!commitR.ok)throw new Error(`获取提交信息失败: ${commitR.status}`);
+    const commitD=await commitR.json();
+    const treeItems=[];
+    for(const[path,content]of Object.entries(filesToCommit)){
+      const br=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/blobs`,{method:'POST',headers:hdr,body:JSON.stringify({content,encoding:'utf-8'})});
+      if(!br.ok)throw new Error(`创建 blob 失败 (${path}): ${br.status}`);
+      const bd=await br.json();treeItems.push({path,mode:'100644',type:'blob',sha:bd.sha});
+    }
+    const trR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/trees`,{method:'POST',headers:hdr,body:JSON.stringify({base_tree:commitD.tree.sha,tree:treeItems})});
+    if(!trR.ok)throw new Error(`创建 tree 失败: ${trR.status}`);
+    const trD=await trR.json();
+    const ncR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/commits`,{method:'POST',headers:hdr,body:JSON.stringify({message:'docs: update resume via online editor',tree:trD.sha,parent:baseSha})});
+    if(!ncR.ok)throw new Error(`创建 commit 失败: ${ncR.status}`);
+    const ncD=await ncR.json();
+    const pushR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/refs/heads/${gh.branch}`,{method:'PATCH',headers:hdr,body:JSON.stringify({sha:ncD.sha})});
+    if(!pushR.ok)throw new Error(`推送失败: ${pushR.status}`);
+    toast('s','已提交！CI 将自动构建 PDF');
+    setTimeout(()=>checkBuild(gh),5000);
+  }catch(e){console.error(e);toast('e',`提交失败: ${e.message}`)}
+}
+
+async function checkBuild(gh){
+  try{
+    let attempts=0;const maxAttempts=6;
+    const poll=async()=>{
+      const r=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/actions/runs?per_page=1`,{headers:{'Authorization':`token ${gh.token}`,'Accept':'application/vnd.github.v3+json'}});
+      const d=await r.json();
+      const run=d.workflow_runs?.[0];
+      if(run){
+        if(run.status==='completed'){
+          toast(run.conclusion==='success'?'s':'e',`CI: ${run.conclusion==='success'?'构建成功':'构建失败'}`);
+          return;
+        }
+        attempts++;
+        if(attempts<maxAttempts){
+          toast('i',`CI: ${run.status}... (${attempts}/${maxAttempts})`);
+          setTimeout(poll,10000);
+        }else{
+          toast('i','CI 仍在运行，请稍后查看');
+        }
+      }
+    };
+    poll();
+  }catch(e){}
+}
+
+function genMainTex(mods){
+  const lang=document.getElementById('cfgLang')?.value||'zh';
+  return `\\documentclass[${lang}]{resume-pro}
+
+\\input{config.tex}
+
+\\begin{document}
+
+${mods.map(m=>`\\input{${m.file}}`).join('\n\n')}
+
+\\end{document}`;
+}
+
+// ===== DOWNLOAD =====
+function dlSource(){
+  S.files[S.curFile]=document.getElementById('editor').value;
+  const activeMods=MODULES.filter(m=>m.on);
+  const mainTex=genMainTex(activeMods);
+  let combined='';
+  for(const[name,content]of Object.entries({['resume-pro-zh.tex']:mainTex,...S.files})){combined+=`% ========== ${name} ==========\n${content}\n\n`}
+  const blob=new Blob([combined],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-source.tex';a.click();
+  toast('s','源码已下载');
+}
+
+function dlZip(){
+  S.files[S.curFile]=document.getElementById('editor').value;
+  const activeMods=MODULES.filter(m=>m.on);
+  const mainTex=genMainTex(activeMods);
+  // Use JSZip if available, otherwise fallback to concatenated download
+  if(window.JSZip){
+    const zip=new JSZip();
+    zip.file('resume-pro-zh.tex',mainTex);
+    for(const[name,content]of Object.entries(S.files)){
+      zip.file(name,content);
+    }
+    zip.generateAsync({type:'blob'}).then(blob=>{
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-package.zip';a.click();
+      toast('s','ZIP 包已下载');
+    });
+  }else{
+    // Fallback: concatenated .tex download
+    let combined='%% Resume Pro — Full Source Package\n%% ================================\n\n';
+    combined+=`%% === resume-pro-zh.tex ===\n${mainTex}\n\n`;
+    for(const[name,content]of Object.entries(S.files)){
+      combined+=`%% === ${name} ===\n${content}\n\n`;
+    }
+    const blob=new Blob([combined],{type:'text/plain'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-package.tex';a.click();
+    toast('s','源码已下载（安装 JSZip 可获得 ZIP 格式）');
+  }
+}
+
+function dlPDF(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  if(gh.owner&&gh.repo){window.open(`https://${gh.owner}.github.io/${gh.repo}/pdfs/resume-pro-zh.pdf`,'_blank')}
+  else{toast('i','请先配置 GitHub 信息以获取在线 PDF；或使用本地 LaTeX 编译');dlSource()}
+}
+
+// ===== FORMAT =====
+function fmtCode(){
+  const ed=document.getElementById('editor');
+  let code=ed.value;
+  // Basic LaTeX formatting
+  code=code.replace(/\r\n/g,'\n');
+  code=code.replace(/\t/g,'  ');
+  code=code.replace(/  +$/gm,''); // trailing spaces
+  code=code.replace(/\n{3,}/g,'\n\n'); // max double newline
+  // Add newline before \begin/\end only if not already on its own line
+  code=code.replace(/([^\n])\n\\begin\{/g,'$1\n\n\\begin{');
+  code=code.replace(/([^\n])\n\\end\{/g,'$1\n\n\\end{');
+  code=code.replace(/\n{3,}/g,'\n\n');
+  code=code.trimEnd()+'\n';
+  ed.value=code;
+  S.files[S.curFile]=code;
+  highlightUpdate();
+  markMod();saveLS();histPush();
+  toast('s','代码已格式化');
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown',e=>{
+  const ctrl=e.metaKey||e.ctrlKey;
+  const inInput=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+  if(ctrl&&e.key==='s'){e.preventDefault();saveLS();histPush();setSt('ok','已保存');S.mod=false;toast('s','已保存')}
+  if(ctrl&&e.key==='z'&&!inInput){e.preventDefault();undo()}
+  if(ctrl&&e.key==='y'&&!inInput){e.preventDefault();redo()}
+  if(ctrl&&e.key==='b'&&!inInput){e.preventDefault();togSide()}
+  if(ctrl&&e.key==='j'&&!inInput){e.preventDefault();togPv()}
+  if(ctrl&&e.key==='f'&&!inInput){e.preventDefault();toggleSearch()}
+  if(ctrl&&e.key==='Enter'){e.preventDefault();build()}
+  if(ctrl&&e.key>='1'&&e.key<='7'&&!inInput){
+    e.preventDefault();
+    const files=['config.tex','header.tex','skills.tex','education.tex','experience.tex','projects.tex','publications.tex'];
+    const idx=parseInt(e.key)-1;
+    if(files[idx]){
+      S.files[S.curFile]=document.getElementById('editor').value;
+      loadFile(files[idx]);
+    }
+  }
+  if(e.key==='?'&&!ctrl&&!e.altKey&&!inInput){
+    document.getElementById('shortcutOverlay').classList.add('show');
+  }
+  if(e.key==='Escape'){
+    document.getElementById('shortcutOverlay').classList.remove('show');
+    document.getElementById('ghModal').classList.remove('show');
+    const sb=document.getElementById('searchBar');
+    if(sb.classList.contains('show'))toggleSearch();
+  }
+});
+
+// ===== UTILS =====
+function esc(s){return s?.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/`/g,'&#96;')||''}
+function toast(t,m){
+  const c=document.getElementById('toastBox');
+  const e=document.createElement('div');e.className=`toast ${t}`;
+  const ic={s:'✅',e:'❌',i:'ℹ️'};e.innerHTML=`<span>${ic[t]||'•'}</span><span>${m}</span>`;
+  c.appendChild(e);setTimeout(()=>e.remove(),3500);
+}
+
+// ===== DRAG & DROP =====
+(function(){
+  const dz=document.getElementById('dropZone');
+  let dragCounter=0;
+  document.addEventListener('dragenter',e=>{e.preventDefault();dragCounter++;dz.classList.add('show')});
+  document.addEventListener('dragleave',e=>{e.preventDefault();dragCounter--;if(dragCounter<=0){dragCounter=0;dz.classList.remove('show')}});
+  document.addEventListener('dragover',e=>e.preventDefault());
+  document.addEventListener('drop',e=>{
+    e.preventDefault();dragCounter=0;dz.classList.remove('show');
+    const file=e.dataTransfer.files[0];
+    if(!file)return;
+    if(file.name.endsWith('.tex')){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const name=file.name;
+        S.files[name]=ev.target.result;
+        if(S.curFile===name){document.getElementById('editor').value=ev.target.result;highlightUpdate()}
+        markMod();saveLS();histPush();
+        toast('s',`已导入 ${name}`);
+        // Switch to the imported file
+        loadFile(name);
+      };
+      reader.readAsText(file);
+    }else if(file.name.endsWith('.json')){
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try{
+          const data=JSON.parse(ev.target.result);
+          if(data.files){Object.assign(S.files,data.files)}
+          if(data.theme)S.theme=data.theme;
+          if(data.variant)S.variant=data.variant;
+          renderThemes();renderModules();renderVariants();
+          loadFile(S.curFile);
+          markMod();saveLS();histPush();
+          toast('s','配置已导入');
+        }catch(err){toast('e','无效的配置文件')}
+      };
+      reader.readAsText(file);
+    }else{
+      toast('i','仅支持 .tex 和 .json 文件');
+    }
+  });
+})();
+
+// ===== IMPORT / EXPORT CONFIG =====
+function exportConfig(){
+  S.files[S.curFile]=document.getElementById('editor').value;
+  const data={theme:S.theme,variant:S.variant,modules:MODULES.map(m=>({id:m.id,on:m.on})),files:S.files,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-config.json';a.click();
+  toast('s','配置已导出');
+}
+
+function importConfig(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,.tex';
+  inp.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      if(file.name.endsWith('.json')){
+        try{
+          const data=JSON.parse(ev.target.result);
+          if(data.files){Object.assign(S.files,data.files)}
+          if(data.theme)S.theme=data.theme;
+          if(data.variant)S.variant=data.variant;
+          if(data.modules)data.modules.forEach(m=>{const mod=MODULES.find(x=>x.id===m.id);if(mod)mod.on=m.on});
+          renderThemes();renderModules();renderVariants();
+          loadFile(S.curFile);syncFormFromConfig();
+          markMod();saveLS();histPush();
+          toast('s','配置已导入');
+        }catch(err){toast('e','无效的配置文件')}
+      }else if(file.name.endsWith('.tex')){
+        S.files[file.name]=ev.target.result;
+        loadFile(file.name);
+        markMod();saveLS();histPush();
+        toast('s',`已导入 ${file.name}`);
+      }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ===== REDUCED MOTION DETECTION =====
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.documentElement.style.setProperty('--transition-speed','0');
+  }
+})();
+
+// ===== LOCAL STORAGE QUOTA CHECK =====
+(function(){
+  try{
+    const used=JSON.stringify(localStorage).length;
+    if(used>4*1024*1024){// Over 4MB
+      toast('i','本地存储接近上限，建议导出备份');
+    }
+  }catch(e){}
+})();
+
+init();
+</script>
+
+<!-- ES Module support for modern browsers -->
+<script type="module">
+  // Register Service Worker for offline support
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => {
+      console.warn('SW registration failed:', err);
+    });
+  }
+
+  // Import JSZip for ZIP download functionality
+  try {
+    const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
+    window.JSZip = JSZip;
+    console.log('JSZip loaded successfully');
+  } catch(e) {
+    console.warn('JSZip module load failed, ZIP download will use fallback:', e);
+  }
+  
+  // Dispatch event to notify that ES modules are loaded
+  window.dispatchEvent(new Event('es-modules-loaded'));
+  console.log('Editor ES module layer initialized');
+</script>
+</body>
+</html>

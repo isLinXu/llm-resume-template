@@ -1,0 +1,43 @@
+% modules-en/projects.tex — Projects & Open-Source
+
+\sectionTitle{Projects}{\faProjectDiagram}
+
+\projectCard{Self-Correcting RAG \textbullet{} \texttt{SelfRAG-Agent}}{Jan 2024 -- May 2024}
+{Enterprise RAG Agent — recall 65\% → 85\%, in production}{%
+\begin{itemize}
+  \item \textbf{Stack}: LangChain, LlamaIndex, Qdrant, bge-reranker, FastAPI
+  \item \textbf{Approach}: iterative retrieval with ReAct-style reflection + hybrid retrieval (vector + BM25) + cross-encoder rerank
+  \item \textbf{Ablation}: iter \textbf{+15\%} \textbullet{} hybrid \textbf{+3\%} \textbullet{} rerank \textbf{+2\%} on MS MARCO / NQ
+\end{itemize}
+}{\faGithub\ github.com/hertz/self-rag-agent \quad \faGlobe\ rag.hertz.dev}
+
+\projectCard{Hierarchical-Memory Long Conversation Agent \textbullet{} \texttt{HMem-Agent}}{Jul 2023 -- Dec 2023}
+{Working / Short-term / Long-term tri-layer memory inspired by human cognition}{%
+\begin{itemize}
+  \item Architecture: Working Memory (last K turns) + Short-term (auto-summary) + Long-term (importance + decay)
+  \item Result: retention \textbf{92\%} (vs 68\%), retrieval \textbf{450ms → 150ms}, 100+ turn task success \textbf{+28\%}
+\end{itemize}
+}{\faGithub\ github.com/hertz/hmem-agent}
+
+\sectionTitle{Open-Source}{\faGithub}
+
+\openSourceItem{hertz/Agent-RL-Framework}{562}{84}{Python}
+{RL-driven LLM Agent decision framework (companion to NeurIPS submission)}{%
+\begin{itemize}
+  \item PPO / DPO / GRPO across ALFWorld / WebShop / SciWorld; closed 30+ issues, merged 12 external PRs
+\end{itemize}
+}
+
+\openSourceItem{huggingface/transformers}{135k}{27k}{Python}
+{HuggingFace flagship repo \textbullet{} \textit{contributor}}{%
+\begin{itemize}
+  \item Fixed Trainer.evaluate FSDP OOM (PR \#28xxx); added Qwen2 long-context evaluation scripts
+\end{itemize}
+}
+
+\openSourceItem{vllm-project/vllm}{32k}{4.8k}{Python}
+{High-performance LLM inference engine \textbullet{} \textit{contributor}}{%
+\begin{itemize}
+  \item Optimized PagedAttention scheduling (\textbf{+15\%} end-to-end throughput); added Baichuan / Yi support
+\end{itemize}
+}

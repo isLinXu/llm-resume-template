@@ -1,0 +1,117 @@
+%% ============================================================
+%%  config.tex — 简历全局配置文件
+%% ============================================================
+%%
+%%  ⚠️  发布前请务必替换以下占位数据为你自己的真实信息！
+%%      - 姓名、职位、关键词
+%%      - 电话、邮箱、社交链接
+%%      - 头像照片
+%%      - Logo（将 logos/ 下的占位图替换为真实 Logo）
+%% ============================================================
+
+%% ---------- 1. 主题色 ----------
+% 内置：techblue / businessblack / academicgray / energyorange /
+%       innovationgreen / professionalpurple / crimson / ocean
+\settheme{techblue}
+% \customtheme{0F172A}{2563EB}{E6EEFB}   % 自定义：主色 / 次色 / 浅底（HEX）
+
+%% ---------- 2. 个人信息 ----------
+%% ⚠️  以下为示例数据，请替换为你自己的真实信息！
+\name{Hertz}                           % ← 替换为你的姓名
+\tagline{大模型算法工程师 · 模型压缩 · 多模态}
+\keywords{LLM \textbullet{} PyTorch \textbullet{} DeepSpeed \textbullet{} RAG \textbullet{} Agent \textbullet{} 模型压缩}
+
+\phone{+86 138-0000-0000}              % ← 替换为你的真实电话
+\email{adong@example.com}              % ← 替换为你的真实邮箱
+\github{hertz}
+\linkedin{hertz}
+\website{https://hertz.dev}
+\blog{https://blog.hertz.dev}
+\location{北京·海淀}
+% \birthday{2000-01}
+% \wechat{hertz}
+% \zhihu{hertz}
+% \scholar{https://scholar.google.com/citations?user=XXXX}
+% \orcid{0000-0000-0000-0000}
+
+%% ---------- 3. 个人头像 / 品牌 Logo（二选一） ----------
+% 圆形 / 方形 / 圆角，默认 circular
+\photoshape{circular}
+\photo{logos/avatar.png}        % ← 替换为你的真实头像（构建脚本自动从 ../hertz.jpg 生成）
+% \headerlogo{logos/brand.png}  % 顶部右侧品牌 Logo（与 \photo 二选一）
+
+%% ---------- 4. 学校 / 公司 Logo 短宏 ----------
+% logos/ 目录下提供了 50+ 占位 Logo（带品牌色 + 首字母）；
+% 把同名 PNG 替换为真实 Logo 即可无缝升级。
+% 不需要的字段保留为空 \def\xxxLogo{} 即可。
+% 字体回退链已内置在 resume-pro.cls 中（macOS / Linux / Windows 自动适配）。
+\def\tsinghuaLogo{logos/tsinghua.png}
+\def\pekingLogo{logos/peking.png}
+\def\sjtuLogo{logos/sjtu.png}
+\def\zjuLogo{logos/zju.png}
+\def\fudanLogo{logos/fudan.png}
+\def\ustcLogo{logos/ustc.png}
+\def\stanfordLogo{logos/stanford.png}
+\def\mitLogo{logos/mit.png}
+\def\ethLogo{logos/eth.png}
+% 更多中国高校
+\def\rucLogo{logos/ruc.png}
+\def\cugLogo{logos/cug.png}
+\def\swjtuLogo{logos/swjtu.png}
+\def\scuLogo{logos/scu.png}
+\def\nankaiLogo{logos/nankai.png}
+\def\tjuLogo{logos/tju.png}
+\def\dlutLogo{logos/dlut.png}
+\def\uestcLogo{logos/uestc.png}
+\def\sudaLogo{logos/suda.png}
+\def\xmuLogo{logos/xmu.png}
+\def\hnuLogo{logos/hnu.png}
+\def\csuLogo{logos/csu.png}
+% 更多国际高校
+\def\caltechLogo{logos/caltech.png}
+\def\columbiaLogo{logos/columbia.png}
+\def\upennLogo{logos/upenn.png}
+\def\nyuLogo{logos/nyu.png}
+\def\uscLogo{logos/usc.png}
+\def\uclaLogo{logos/ucla.png}
+\def\uiucLogo{logos/uiuc.png}
+\def\gatechLogo{logos/gatech.png}
+\def\umichLogo{logos/umich.png}
+\def\uwLogo{logos/uw.png}
+\def\ucsdLogo{logos/ucsd.png}
+
+\def\tencentLogo{logos/tencent.png}
+\def\bytedanceLogo{logos/bytedance.png}
+\def\alibabaLogo{logos/alibaba.png}
+\def\baiduLogo{logos/baidu.png}
+\def\meituanLogo{logos/meituan.png}
+\def\huaweiLogo{logos/huawei.png}
+\def\xiaomiLogo{logos/xiaomi.png}
+\def\didiLogo{logos/didi.png}
+\def\nvidiaLogo{logos/nvidia.png}
+\def\openaiLogo{logos/openai.png}
+\def\googleLogo{logos/google.png}
+\def\microsoftLogo{logos/microsoft.png}
+\def\amazonLogo{logos/amazon.png}
+\def\appleLogo{logos/apple.png}
+\def\metaLogo{logos/meta.png}
+\def\anthropicLogo{logos/anthropic.png}
+\def\deepseekLogo{logos/deepseek.png}
+\def\moonshotLogo{logos/moonshot.png}
+\def\minimaxLogo{logos/minimax.png}
+\def\alibabaCloudLogo{logos/alibaba-cloud.png}
+
+%% ---------- 5. 页脚（fileinfo + version）----------
+% 出现在每页底部：左 fileinfo · 中 页码 · 右 version (+ 可选 QR)
+% 用 \rpName 引用姓名（在 \name{...} 后自动可用，由 cls 在 \AtBeginDocument 时缓存）
+\fileinfo{\faCopyright\ 2025--2026 \rpName\ \textbullet\ Built with \LaTeX}
+\version{v3.7.0 \textbullet\ \today}
+
+%% ---------- 6. 页脚 QR 码（可选）----------
+% 设置后会在页脚右侧 version 前嵌入一个小 QR 码，指向你设定的 URL。
+% 适合面试时扫码直达个人主页 / GitHub / 作品集。
+% \qrlink{https://hertz.dev}
+
+%% ---------- 7. 最大页数限制（可选）----------
+% 设置后，编译结束时若超出页数会在终端输出警告。
+% \setMaxPages{1}   % 应届一页简历建议设为 1

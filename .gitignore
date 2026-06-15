@@ -1,0 +1,84 @@
+# ============================
+# LaTeX auxiliary files
+# ============================
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.xdv
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*.end
+*.dvi
+
+# ============================
+# macOS
+# ============================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ============================
+# Editor / IDE
+# ============================
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.code-workspace
+.codebuddy/
+
+# ============================
+# AI assistant memory
+# ============================
+.workbuddy/
+
+# ============================
+# Build artifacts (keep source PDFs in logos/)
+# ============================
+latex_resume_pro/variants/pdf/
+latex_resume_pro/variant-*.pdf
+latex_resume_pro/quickstart.pdf
+latex_resume_pro/resume-pro-zh.pdf
+latex_resume_pro/themes-preview.pdf
+latex_resume_pro/texput.log
+
+# ============================
+# Python cache
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+
+# ============================
+# Docker
+# ============================
+.docker/
+
+# ============================
+# Misc
+# ============================
+.env
+*.bak
+
+# ============================
+# Box AI session temp files
+# ============================
+.session_tmps/
+output/

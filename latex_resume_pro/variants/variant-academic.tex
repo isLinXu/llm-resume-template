@@ -1,0 +1,29 @@
+%% ============================================================
+%%  variant-academic.tex — 学术灰 / 圆角头像 / 默认排版
+%%  适用场景：科研 / 申博 / 教职
+%%  编译：cd .. && xelatex -output-directory=variants/pdf variants/variant-academic.tex
+%%        或：使用 build_variants.sh
+%% ============================================================
+\documentclass[zh]{resume-pro}
+
+%% --- 主题与样式覆写 ---
+\settheme{academicgray}
+
+%% --- 个人信息（同 config.tex；如需独立可在此覆写）---
+\input{config.tex}
+
+%% 在 config 之后再次设置主题与形状（覆盖 config 的设置）
+\settheme{academicgray}
+\photoshape{rounded}
+
+%% 版本字段供页脚显示
+\version{Academic \textbullet\ \today}
+
+\begin{document}
+\input{modules/header.tex}
+\input{modules/skills.tex}
+\input{modules/education.tex}
+\input{modules/experience.tex}
+\input{modules/publications.tex}    % 学术风：论文先于项目
+\input{modules/projects.tex}
+\end{document}

@@ -1,0 +1,21 @@
+%% ============================================================
+%%  variant-blackpro.tex — 商务黑 / 方形头像 / 默认排版
+%%  适用场景：管理 / 咨询 / 投行 / 金融
+%% ============================================================
+\documentclass[zh]{resume-pro}
+
+\input{config.tex}
+
+\settheme{businessblack}
+\photoshape{square}
+
+\version{Business \textbullet\ \today}
+
+\begin{document}
+\input{modules/header.tex}
+\input{modules/experience.tex}      % 商务风：把经历放最前
+\input{modules/skills.tex}
+\input{modules/education.tex}
+\input{modules/projects.tex}
+\input{modules/publications.tex}
+\end{document}

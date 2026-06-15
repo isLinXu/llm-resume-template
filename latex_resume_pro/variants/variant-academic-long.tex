@@ -1,0 +1,68 @@
+%% ============================================================
+%%  variant-academic-long.tex — 长版学术 CV（3+ 页）
+%%  适用场景：教职申请 / 博后 / 研究员 / 详细学术履历
+%%  特点：
+%%    - 使用 timelineEntry 展示完整学术时间线
+%%    - 论文列表更详细（含摘要 / 引用数）
+%%    - 包含教学 / 服务 / 审稿等学术专属章节
+%%    - 学术灰主题 + 圆角头像
+%% ============================================================
+\documentclass[zh]{resume-pro}
+
+\input{config.tex}
+
+%% --- 主题与样式覆写 ---
+\settheme{academicgray}
+\photoshape{rounded}
+
+%% 版本字段供页脚显示
+\version{Academic CV \textbullet\ \today}
+
+\begin{document}
+\input{modules/header.tex}
+
+%% ===== 研究兴趣 =====
+\sectionTitle{研究兴趣}{\faLightbulb}
+
+\skillrow{核心方向}{大语言模型压缩与加速 \textbullet{} 强化学习驱动的 Agent 决策 \textbullet{} 检索增强生成}
+\skillrow{延伸方向}{多模态对齐 \textbullet{} 参数高效微调 \textbullet{} 知识蒸馏 \textbullet{} 长上下文建模}
+
+%% ===== 教育背景 =====
+\input{modules/education.tex}
+
+%% ===== 科研与实习 =====
+\input{modules/experience.tex}
+
+%% ===== 论文发表 =====
+\input{modules/publications.tex}
+
+%% ===== 项目经历 =====
+\input{modules/projects.tex}
+
+%% ===== 专业技能 =====
+\input{modules/skills.tex}
+
+%% ===== 学术服务与审稿 =====
+\sectionTitle{学术服务}{\faUsers}
+
+\awardItem{NeurIPS 2025 审稿人}{2025}{参与 3 篇投稿论文的同行评审}
+\awardItem{ICML 2025 审稿人}{2025}{参与 2 篇投稿论文的同行评审}
+\awardItem{ACL Rolling Review 审稿人}{2024 -- 至今}{累计审稿 5+ 篇}
+
+%% ===== 教学经历 =====
+\sectionTitle{教学经历}{\faChalkboardTeacher}
+
+\timelineEntry{2025 春}{深度学习（研究生课程）}{清华大学 · 助教}{负责 2 次专题讲座（模型压缩 / 量化）+ 作业批改 + 答疑}
+\timelineEntry{2024 秋}{自然语言处理（本科生课程）}{清华大学 · 助教}{设计并批改 3 次编程作业（RAG / LoRA / DPO）}
+
+%% ===== 学术交流 =====
+\sectionTitle{学术交流}{\faGlobe}
+
+\timelineEntry{2025.01}{NeurIPS 2024 Poster Presentation}{Vancouver, Canada}{论文 Hierarchical Knowledge Distillation 海报展示}
+\timelineEntry{2024.07}{清华大学 NLP 组组会报告}{北京}{Self-Reflective Agents: RL for Decision Making}
+\timelineEntry{2024.03}{字节跳动豆包大模型技术分享}{北京}{CoT 数据构造与持续预训练实践}
+
+%% ===== 自我评价 =====
+\input{modules/summary.tex}
+
+\end{document}

@@ -1,0 +1,31 @@
+%%
+%% logos/build-placeholders.tex
+%% 用 TikZ 生成 logo 占位图（PDF），便于无真实 Logo 时仍有视觉效果。
+%% 编译: xelatex build-placeholders.tex
+%% 产物: tsinghua.pdf, tencent.pdf, bytedance.pdf, alibaba.pdf, baidu.pdf,
+%%       huawei.pdf, openai.pdf, nvidia.pdf, mit.pdf, stanford.pdf, brand.pdf
+%%
+%% 你也可以把真实的 logo（PNG / SVG → PDF）丢进本目录覆盖同名文件。
+%%
+\documentclass[border=4pt]{standalone}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{fontspec}
+\IfFontExistsTF{IBM Plex Sans}{\setsansfont{IBM Plex Sans}}{}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{calc}
+
+% \makelogo{<filename>}{<bg>}{<fg>}{<text>}
+\newcommand{\makelogo}[4]{%
+  \begin{tikzpicture}
+    \node[draw=#3,fill=#2,text=#3,
+          rounded corners=8pt,
+          minimum width=64pt,minimum height=64pt,
+          font=\Huge\bfseries,inner sep=0pt] {#4};
+  \end{tikzpicture}%
+}
+
+\begin{document}
+% 这里只生成预览，实际批量产出由 build-placeholders.sh 调用
+\makelogo{tsinghua}{4B0082}{white}{T}
+\end{document}

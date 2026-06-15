@@ -1,0 +1,113 @@
+%% ============================================================
+%%  variant-twocolumn.tex — 双栏布局（Sidebar + Main Pane）
+%%  - 左侧 sidebar：头像 + 联系方式 + 技能 + 语言 + 荣誉
+%%  - 右侧 main：教育 + 经历 + 项目 + 论文
+%%  - 适用：求职平台快速浏览 / 时间紧的招聘官
+%% ============================================================
+\documentclass[zh,nofooter]{resume-pro}
+
+\input{config.tex}
+
+\settheme{ocean}
+\photoshape{circular}
+
+\version{Two-Column \textbullet\ \today}
+
+%% 双栏 variant 自定义头部（不用 makeheader 默认布局）
+\begin{document}
+\thispagestyle{empty}
+
+\noindent
+%% ===== 左侧 Sidebar =====
+\begin{sidebar}{0.30\linewidth}
+  \begin{center}
+    \begin{tikzpicture}
+      \clip (2.4em,2.4em) circle (2.4em);
+      \node[anchor=south west,inner sep=0pt] at (0,0)
+        {\includegraphics[width=4.8em,height=4.8em,keepaspectratio=false]{logos/avatar.png}};
+    \end{tikzpicture}\\[0.4em]
+    {\large\bfseries\color{themecolor}\rpName}\\[0.1em]
+    {\footnotesize\color{accentcolor}\rpTag}
+  \end{center}
+
+  \sidesection{联系方式}{\faAddressCard}
+  {\footnotesize
+  \faPhone\ \,+86 138-0000-0000\\[0.1em]
+  \faEnvelope\ \,\href{mailto:hertz@example.com}{hertz@example.com}\\[0.1em]
+  \faMapMarker*\ \,北京·海淀\\[0.1em]
+  \faGithub\ \,\href{https://github.com/hertz}{github.com/hertz}\\[0.1em]
+  \faLinkedin\ \,\href{https://linkedin.com/in/hertz}{linkedin.com/in/hertz}\\[0.1em]
+  \faGlobe\ \,\href{https://hertz.dev}{hertz.dev}
+  }
+
+  \sidesection{核心技能}{\faLaptopCode}
+  {\footnotesize
+  \textbf{语言} \\ Python · C++ / CUDA · Bash \\[0.3em]
+  \textbf{大模型} \\ \skilltagAccent{LLM} \skilltagAccent{RLHF} \\
+  \skilltag{LoRA} \skilltag{Distill} \skilltag{Quant} \\
+  \skilltag{RAG} \skilltag{Agent} \\[0.3em]
+  \textbf{框架} \\ PyTorch · DeepSpeed · vLLM · LangChain
+  }
+
+  \sidesection{语言能力}{\faLanguage}
+  \skilldots{中文}{5}
+  \skilldots{英文}{4}
+
+  \sidesection{荣誉}{\faTrophy}
+  {\footnotesize
+  \textbullet\ Kaggle LLM 金牌 (Top 1\%) \\[0.2em]
+  \textbullet\ 天池 LLM 微调全国冠军 \\[0.2em]
+  \textbullet\ 清华国家奖学金 \\[0.2em]
+  \textbullet\ MCM/ICM 一等奖 \\[0.2em]
+  \textbullet\ GitHub 5000+ Stars
+  }
+\end{sidebar}\hfill
+%% ===== 右侧主内容 =====
+\begin{mainpane}{0.66\linewidth}
+
+  %% 内嵌摘要
+  {\itshape\color{darkcolor}\small
+  计算机硕士在读，主攻大模型方向，深耕模型压缩与微调；具备字节、腾讯大模型算法实习经验；
+  \textbf{NeurIPS} 一作 1 篇、Kaggle 大模型微调金牌（Top 1\%）、开源 \textbf{500+ Stars}。
+  }
+
+  \sectionTitle{教育背景}{\faGraduationCap}
+  \educationItem[\tsinghuaLogo]{清华大学}{2023.09 -- 2026.06}{计算机科学与技术 \textbullet{} 硕士}{排名前 5\%}
+  \educationItem[\tsinghuaLogo]{清华大学}{2019.09 -- 2023.06}{计算机科学与技术 \textbullet{} 学士}{GPA 3.85/4.00}
+
+  \sectionTitle{实习经历}{\faBriefcase}
+  \experienceItem[\bytedanceLogo]{字节跳动 \textbullet{} 豆包 LLM 团队}{2024.06 -- 2024.12}{LLM 算法实习生}{%
+  \begin{itemize}
+    \item CoT 数据 5B tokens 持续预训练，HumanEval/MATH 平均 \textbf{+5--8 pp}
+    \item 多任务 SFT + DPO（LLaMA-3-8B），用户满意度 \textbf{87\%}
+    \item ReAct + ToT 混合推理，工具调用 \textbf{72\% → 89\%}
+  \end{itemize}
+  }
+
+  \experienceItem[\tencentLogo]{腾讯 \textbullet{} 微信 AI}{2023.06 -- 2023.12}{算法实习生}{%
+  \begin{itemize}
+    \item 推理服务优化，P99 \textbf{3.2s → 1.8s}，QPS \textbf{+65\%}
+    \item INT8 量化方案，性能保留 \textbf{98\%}，显存 \textbf{−55\%}
+    \item vLLM 二开连续批处理，1000+ QPS 吞吐 \textbf{+80\%}
+  \end{itemize}
+  }
+
+  \sectionTitle{项目精选}{\faProjectDiagram}
+  \projectCard{自我纠错 RAG \textbullet{} \texttt{SelfRAG-Agent}}{2024.01--05}
+  {召回率 65\% → 85\%，已落地组内生产}{%
+  \begin{itemize}
+    \item 迭代检索 + 混合检索 + 交叉编码器 rerank
+    \item MS MARCO / NQ 上累计 \textbf{+20\%} 提升
+  \end{itemize}
+  }{\faGithub\ github.com/hertz/self-rag-agent}
+
+  \sectionTitle{论文}{\faFile*}
+  \publicationItem
+  {Hierarchical Knowledge Distillation for Compact LLMs}
+  {\textbf{Hertz}, Li Si, Wang Wu}
+  {NeurIPS 2024 (CCF-A)}
+  {\href{https://arxiv.org/abs/2410.xxxxx}{\faFilePdf\ Paper}}
+
+\end{mainpane}
+
+\end{document}

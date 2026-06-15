@@ -1,0 +1,184 @@
+name: Build Resume PDFs
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'latex_resume_pro/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+    timeout-minutes: 30
+    container:
+      image: danteev/texlive:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache TeX auxiliary files
+        uses: actions/cache@v4
+        with:
+          path: |
+            latex_resume_pro/*.aux
+            latex_resume_pro/*.log
+            latex_resume_pro/*.out
+            latex_resume_pro/*.fls
+            latex_resume_pro/*.fdb_latexmk
+            latex_resume_pro/*.synctex.gz
+          key: tex-build-${{ hashFiles('latex_resume_pro/**/*.tex', 'latex_resume_pro/**/*.cls') }}
+          restore-keys: tex-build-
+
+      - name: Install Python dependencies
+        run: |
+          pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
+
+      - name: Generate placeholder logos
+        run: |
+          cd latex_resume_pro/logos
+          python3 build_placeholders.py --svg
+
+      - name: Lint LaTeX files
+        continue-on-error: true
+        run: |
+          cd latex_resume_pro
+          for f in *.tex modules/*.tex modules-en/*.tex; do
+            chktex -q -n2 -n24 -n13 "$f" 2>/dev/null || true
+          done
+
+      - name: Build main resume
+        run: |
+          cd latex_resume_pro
+          xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -3
+          xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -3
+
+      - name: Build quickstart example
+        run: |
+          cd latex_resume_pro
+          xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -3
+          xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -3
+
+      - name: Build themes preview
+        run: |
+          cd latex_resume_pro
+          xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -3
+          xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -3
+
+      - name: Build all variants
+        run: |
+          cd latex_resume_pro
+          bash variants/build_variants.sh 2>&1 | tail -10 || true
+
+      - name: Verify builds
+        run: |
+          cd latex_resume_pro
+          echo "## Build Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          MISSING=0
+          for f in resume-pro-zh.pdf quickstart.pdf themes-preview.pdf; do
+            if [ -f "$f" ]; then
+              echo "✅ $f ($(du -h "$f" | cut -f1))" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $f — MISSING" >> $GITHUB_STEP_SUMMARY
+              MISSING=1
+            fi
+          done
+          if [ -d variants/pdf ]; then
+            for f in variants/pdf/*.pdf; do
+              if [ -f "$f" ]; then
+                echo "✅ $(basename "$f") ($(du -h "$f" | cut -f1))" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          fi
+          if [ "$MISSING" -eq 1 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Some PDFs failed to build. Check logs above." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Collect PDFs
+        run: |
+          mkdir -p output
+          cp latex_resume_pro/resume-pro-zh.pdf output/
+          cp latex_resume_pro/quickstart.pdf output/
+          cp latex_resume_pro/themes-preview.pdf output/
+          if [ -d latex_resume_pro/variants/pdf ]; then
+            cp latex_resume_pro/variants/pdf/*.pdf output/ 2>/dev/null || true
+          fi
+
+      - name: Upload PDF artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-pdfs
+          path: output/
+          retention-days: 30
+
+      - name: Comment PR with build results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const outputDir = 'output';
+            const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.pdf'));
+            let body = '## 📄 PDF Build Results\n\n';
+            body += '| File | Size |\n|------|------|\n';
+            for (const f of files) {
+              const stat = fs.statSync(path.join(outputDir, f));
+              const sizeKB = (stat.size / 1024).toFixed(1);
+              body += `| ${f} | ${sizeKB} KB |\n`;
+            }
+            body += '\n> Download the full artifact from the workflow summary page.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+      - name: Commit PDFs to repo (main branch only)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p docs/pdfs
+          cp output/*.pdf docs/pdfs/
+          # Force-add PDFs even if .gitignore excludes them
+          git add -f docs/pdfs/*.pdf
+          git diff --cached --quiet || git commit -m "ci: update built PDFs [skip ci]"
+          git push
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download PDF artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: resume-pdfs
+          path: output/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: output/*.pdf
+          generate_release_notes: true
+          draft: false

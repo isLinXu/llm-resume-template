@@ -1,0 +1,50 @@
+%% ============================================================
+%%  variant-minimalist.tex — 极简单页 / 单色 / 紧凑
+%%  - 无头像、无 Logo（适合纯 ATS / 黑白打印）
+%%  - 强制 1 页内承载核心信息
+%% ============================================================
+\documentclass[zh,compact,monochrome]{resume-pro}
+
+\input{config.tex}
+
+%% 单色 + 不要头像
+\makeatletter
+\let\@photo\@undefined
+\let\@headerlogo\@undefined
+\makeatother
+
+%% 把所有 Logo 短宏置空，避免左侧缩略图占位
+\def\tsinghuaLogo{}
+\def\pekingLogo{}
+\def\sjtuLogo{}
+\def\zjuLogo{}
+\def\fudanLogo{}
+\def\ustcLogo{}
+\def\stanfordLogo{}
+\def\mitLogo{}
+\def\ethLogo{}
+\def\tencentLogo{}
+\def\bytedanceLogo{}
+\def\alibabaLogo{}
+\def\baiduLogo{}
+\def\meituanLogo{}
+\def\huaweiLogo{}
+\def\xiaomiLogo{}
+\def\didiLogo{}
+\def\nvidiaLogo{}
+\def\openaiLogo{}
+\def\googleLogo{}
+\def\microsoftLogo{}
+\def\amazonLogo{}
+\def\appleLogo{}
+
+\version{Minimalist \textbullet\ ATS \textbullet\ \today}
+
+\begin{document}
+\input{modules/header.tex}
+\input{modules/skills.tex}
+\input{modules/experience.tex}
+\input{modules/education.tex}
+\input{modules/publications.tex}
+% projects 略去 — 一页内优先核心信息
+\end{document}

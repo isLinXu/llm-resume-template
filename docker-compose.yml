@@ -1,0 +1,13 @@
+# docker-compose.yml — 简化 Docker 编译
+#
+# 用法：
+#   docker compose build          # 构建镜像
+#   docker compose up             # 编译主简历
+#   docker compose run resume xelatex quickstart.tex   # 编译其他文件
+#   docker compose run resume bash variants/build_variants.sh  # 编译变体
+#
+services:
+  resume:
+    build: .
+    volumes:
+      - ./latex_resume_pro:/workspace

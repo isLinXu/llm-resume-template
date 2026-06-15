@@ -1,0 +1,30 @@
+# ============================
+# Binary / media files
+# ============================
+*.pdf    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.svg    text
+
+# ============================
+# Auto-detect line endings
+# ============================
+*.tex    text eol=lf
+*.cls    text eol=lf
+*.sty    text eol=lf
+*.bib    text eol=lf
+*.py     text eol=lf
+*.sh     text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.md     text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+
+# ============================
+# Linguist language detection
+# ============================
+*.cls    linguist-language=TeX
+*.sty    linguist-language=TeX
+build_placeholders.py linguist-language=Python

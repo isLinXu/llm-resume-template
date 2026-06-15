@@ -1,0 +1,75 @@
+%% ============================================================
+%%  variant-onepage.tex — 极简一页简历（应届 / 校招首选）
+%%  - 强制 compact 模式 + nofooter，最大化内容密度
+%%  - 精选最核心章节：教育 + 技能 + 经历 + 项目
+%%  - 去掉摘要 / 荣誉 / 自我评价等非必要章节
+%%  - 适合 ATS 解析：简洁结构、最少图形元素
+%% ============================================================
+\documentclass[zh,compact,nofooter]{resume-pro}
+
+\input{config.tex}
+
+\settheme{techblue}
+\version{One-Page \textbullet\ \today}
+\setMaxPages{1}
+
+\begin{document}
+
+\makeheader
+
+%% ===== 专业技能（精简为一行标签）=====
+\sectionTitle{专业技能}{\faLaptopCode}
+
+\skillrow{编程}{Python \textbullet{} C++ / CUDA \textbullet{} Bash}
+\skillrow{大模型}{\skilltagAccent{LLM} \skilltagAccent{SFT} \skilltagAccent{RLHF/DPO} \skilltag{LoRA} \skilltag{RAG} \skilltag{Agent} \skilltag{Quantization}}
+\skillrow{框架}{PyTorch \textbullet{} DeepSpeed \textbullet{} vLLM \textbullet{} LangChain \textbullet{} Docker / K8s}
+
+%% ===== 教育背景 =====
+\sectionTitle{教育背景}{\faGraduationCap}
+
+\educationItem[\tsinghuaLogo]{清华大学 \textbullet{} 计算机系}{2023.09 -- 2026.06}{计算机科学与技术 \textbullet{} 硕士}{排名前 5\% \textbullet{} 国家奖学金}
+\educationItem[\tsinghuaLogo]{清华大学 \textbullet{} 计算机系}{2019.09 -- 2023.06}{计算机科学与技术 \textbullet{} 学士}{GPA 3.85/4.00 \textbullet{} ETH 交换}
+
+%% ===== 实习经历 =====
+\sectionTitle{实习经历}{\faBriefcase}
+
+\experienceItem[\bytedanceLogo]{字节跳动 \textbullet{} 豆包大模型团队}{2024.06 -- 2024.12}{大模型算法实习生}{%
+\begin{itemize}
+  \item CoT 数据构造 5B tokens 持续预训练，HumanEval/MATH 平均 \textbf{+5--8 pp}
+  \item 多任务 SFT + DPO（LLaMA-3-8B），满意度 \textbf{87\%}，benchmark \textbf{+3 pp}
+  \item ReAct + ToT 混合推理框架，工具调用 \textbf{72\% → 89\%}
+\end{itemize}
+}
+
+\experienceItem[\tencentLogo]{腾讯 \textbullet{} 微信 AI 团队}{2023.06 -- 2023.12}{算法工程实习生}{%
+\begin{itemize}
+  \item 推理服务优化，P99 \textbf{3.2s → 1.8s}，QPS \textbf{+65\%}
+  \item INT8 量化方案，性能保留 \textbf{98\%}，显存 \textbf{−55\%}
+\end{itemize}
+}
+
+%% ===== 项目精选 =====
+\sectionTitle{项目经历}{\faProjectDiagram}
+
+\projectCard{自我纠错型 RAG 系统}{2024.01 -- 2024.05}
+{企业知识库 Agent，召回率 65\% → 85\%}{%
+\begin{itemize}
+  \item 迭代式检索 + 混合检索 + 交叉编码器重排序，MS MARCO \textbf{+15\%}
+\end{itemize}
+}{\faGithub\ github.com/hertz/self-rag-agent}
+
+\projectCard{LLM 推理加速框架 \textbullet{} FastInfer}{2023.03 -- 2023.06}
+{基于 vLLM 二开的低延迟推理引擎}{%
+\begin{itemize}
+  \item PagedAttention + KV Cache 复用，A100 吞吐 \textbf{2400 tok/s}，提升 \textbf{1.8×}
+\end{itemize}
+}{\faGithub\ github.com/hertz/fastinfer}
+
+%% ===== 代表性成果（一行式）=====
+\sectionTitle{代表性成果}{\faTrophy}
+
+\inlineEntry{\faFile*}{NeurIPS 2024 一作（CCF-A）}{层级知识蒸馏}
+\inlineEntry{\faTrophy}{Kaggle LLM 金牌 Top 1\%}{2023}
+\inlineEntry{\faGithub}{开源 5000+ Stars}{Agent-RL-Framework}
+
+\end{document}

@@ -1,0 +1,59 @@
+%% ============================================================
+%%  quickstart.tex — 极简入门示例（单文件可编译）
+%% ------------------------------------------------------------
+%%  最少代码量演示 resume-pro 的核心原语：
+%%      - \makeheader      头部
+%%      - \sectionTitle    带图标的章节标题
+%%      - \educationItem   教育条目
+%%      - \experienceItem  工作 / 实习条目
+%%      - \projectCard     项目卡片
+%%      - \skillbar / \skilltag   技能可视化
+%%  编译：xelatex quickstart.tex
+%% ============================================================
+
+\documentclass[zh]{resume-pro}
+
+%% 主题（可换：techblue / businessblack / academicgray / ...）
+\settheme{techblue}
+
+%% 个人信息
+\name{张三}
+\tagline{大模型算法工程师}
+\keywords{Python \textbullet{} LLM \textbullet{} PyTorch}
+\phone{+86 138-0000-0000}
+\email{zhangsan@example.com}
+\github{zhangsan}
+\location{北京}
+
+\begin{document}
+
+\makeheader
+
+\sectionTitle{教育背景}{\faGraduationCap}
+\educationItem{清华大学}{2020.09 -- 2024.06}{计算机科学与技术}{本科 \textbullet{} GPA 3.8/4.0}
+
+\sectionTitle{专业技能}{\faLaptopCode}
+\skillbar{Python \textbullet{} PyTorch}{9}
+\skillbar{大模型微调（LoRA / RLHF）}{8}
+\skilltag{LLM} \skilltag{RAG} \skilltag{Agent} \skilltag{Docker}
+
+\sectionTitle{实习经历}{\faBriefcase}
+\experienceItem{腾讯 AI Lab}{2023.06 -- 2024.03}{大模型算法实习生}{%
+\begin{itemize}
+  \item 参与混元模型的 SFT 与 RLHF，benchmark 平均 +5pp
+  \item 推理服务优化，P99 延迟从 3.2s 降至 1.8s
+\end{itemize}
+}
+
+\sectionTitle{项目经历}{\faProjectDiagram}
+\projectCard{智能问答系统}{2023.06 -- 2023.12}
+{基于 RAG 的企业知识库问答}
+{%
+\begin{itemize}
+  \item 准确率 92\%，响应时间 < 100ms
+  \item 实现混合检索 + 重排序
+\end{itemize}
+}
+{\faGithub\ github.com/zhangsan/qa-bot}
+
+\end{document}

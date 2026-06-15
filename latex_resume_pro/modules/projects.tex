@@ -1,0 +1,62 @@
+% modules/projects.tex — 项目 + 开源 + 作品集
+
+\sectionTitle{项目经历}{\faProjectDiagram}
+
+\projectCard{自我纠错型 RAG 系统 \textbullet{} \texttt{SelfRAG-Agent}}{2024.01 -- 2024.05}
+{企业知识库 Agent，召回率 65\% → 85\%，已落地组内生产环境}{%
+\begin{itemize}
+  \item \textbf{技术栈}：LangChain、LlamaIndex、Qdrant、bge-reranker、FastAPI
+  \item \textbf{核心方案}：迭代式检索（ReAct 反思）+ 混合检索（向量 + BM25）+ 交叉编码器重排序
+  \item \textbf{消融}：MS MARCO / NQ 上 迭代 \textbf{+15\%} \textbullet{} 多策略融合 \textbf{+3\%} \textbullet{} 重排序 \textbf{+2\%}
+\end{itemize}
+}{\faGithub\ github.com/hertz/self-rag-agent \quad \faGlobe\ rag.hertz.dev}
+
+\projectCard{分层记忆长程对话 Agent \textbullet{} \texttt{HMem-Agent}}{2023.07 -- 2023.12}
+{受人类记忆机制启发，构建工作 / 短期 / 长期三层记忆架构}{%
+\begin{itemize}
+  \item \textbf{架构}：Working Memory（K 轮原文）+ Short-term（自动摘要）+ Long-term（重要性 + 时间衰减）
+  \item \textbf{效果}：信息保留率 \textbf{92\%}（vs 68\%），检索 \textbf{450ms → 150ms}，100+ 轮对话完成率 \textbf{+28\%}
+\end{itemize}
+}{\faGithub\ github.com/hertz/hmem-agent}
+
+\projectCard{LLM 推理加速框架 \textbullet{} \texttt{FastInfer}}{2023.03 -- 2023.06}
+{基于 vLLM 二次开发的低延迟推理引擎，支持动态批处理与抢占调度}{%
+\begin{itemize}
+  \item PagedAttention 调度优化 + 自定义 CUDA Kernel + KV Cache 复用
+  \item A100 单卡 LLaMA-7B 吞吐 \textbf{2400 tokens/s}，相比 baseline 提升 \textbf{1.8×}
+\end{itemize}
+}{\faGithub\ github.com/hertz/fastinfer}
+
+\sectionTitle{开源贡献}{\faGithub}
+
+\openSourceItem{hertz/Agent-RL-Framework}{562}{84}{Python}
+{强化学习驱动的 LLM Agent 决策框架（配套 NeurIPS 投稿）}{%
+\begin{itemize}
+  \item 集成 PPO / DPO / GRPO，覆盖 ALFWorld / WebShop / SciWorld 三基准；处理 30+ Issues，合并 12 PR
+\end{itemize}
+}
+
+\openSourceItem{huggingface/transformers}{135k}{27k}{Python}
+{HuggingFace 主仓库 \textbullet{} \textit{contributor}}{%
+\begin{itemize}
+  \item 修复 Trainer.evaluate FSDP OOM（PR \#28xxx）；为 Qwen2 补充长文本评测脚本
+\end{itemize}
+}
+
+\openSourceItem{vllm-project/vllm}{32k}{4.8k}{Python}
+{高性能 LLM 推理引擎 \textbullet{} \textit{contributor}}{%
+\begin{itemize}
+  \item PagedAttention 调度路径优化，端到端吞吐 \textbf{+15\%}；补充 Baichuan / Yi 国产模型支持
+\end{itemize}
+}
+
+\sectionTitle{作品集}{\faPalette}
+
+\workItem{Hertz \textbullet{} 个人技术博客}{Hexo \textbullet{} 累计 100k+ 阅读}{https://blog.hertz.dev}
+{LLM / Agent / RAG 系列原创长文 50+ 篇，多次被「机器之心」「PaperWeekly」转载}
+
+\workItem{《大模型工程化实战》技术专栏}{掘金 \textbullet{} 25 篇 \textbullet{} 1.5 万关注}{https://juejin.cn/user/hertz}
+{推理加速、量化部署、LangChain 实践，单篇最高阅读 8.6 万}
+
+\workItem{B 站 \textbullet{} LLM 论文精读频道}{B 站 \textbullet{} 1.2 万粉丝}{https://space.bilibili.com/hertz}
+{每周精读一篇顶会论文 + 可复现 Notebook，累计播放 50 万+}

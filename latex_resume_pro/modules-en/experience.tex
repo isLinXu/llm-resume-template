@@ -1,0 +1,28 @@
+% modules-en/experience.tex — Internships & Research
+
+\sectionTitle{Internships}{\faBriefcase}
+
+\experienceItem[\bytedanceLogo]{ByteDance \textbullet{} Doubao LLM Team}{Jun 2024 -- Dec 2024}{LLM Algorithm Intern}{%
+\begin{itemize}
+  \item Led CoT data construction for code/math scenarios (5B tokens for continued pre-training); HumanEval/MATH/GSM8K averages \textbf{+5--8 pp}
+  \item Designed multi-task SFT + DPO recipe (LLaMA-3-8B) over 500K multi-turn dialogues; internal benchmark \textbf{+3 pp}, user satisfaction \textbf{87\%}
+  \item Built ReAct + Tree-of-Thought hybrid reasoning framework; tool-call accuracy \textbf{72\% → 89\%}, complex-task success \textbf{+12\%}
+\end{itemize}
+}
+
+\experienceItem[\tencentLogo]{Tencent \textbullet{} WeChat AI}{Jun 2023 -- Dec 2023}{Algorithm Engineering Intern}{%
+\begin{itemize}
+  \item Optimised inference (KV-cache reuse + kernel fusion + dynamic batching); P99 \textbf{3.2s → 1.8s}, QPS \textbf{+65\%}
+  \item Implemented INT8 + mixed-precision quantization; \textbf{98\%} performance retained, memory \textbf{−55\%}, deployments per machine doubled
+  \item Extended vLLM with continuous batching and preemptive scheduling; throughput \textbf{+80\%} at 1000+ QPS, P95 \textbf{−40\%}
+\end{itemize}
+}
+
+\sectionTitle{Research Experience}{\faFlask}
+
+\experienceItem[\tsinghuaLogo]{Tsinghua NLP Lab \textbullet{} LLM Group}{Sep 2023 -- Present}{Research Assistant (1st / 2nd author)}{%
+\begin{itemize}
+  \item \textbf{RL-driven autonomous decision Agent} (NeurIPS 2026 submission): PPO + hierarchical RL, \textbf{+12--18\%} task success on ALFWorld / WebShop, \textbf{−25\%} decision steps; MCTS+RL hybrid yields \textbf{+35\%} sample efficiency on long-horizon tasks
+  \item \textbf{Hierarchical KD for LLM compression} (NeurIPS 2024 CCF-A, published, 15 cites): triple alignment of attention/hidden/output, LLaMA-13B → \textbf{3B} retaining \textbf{95\%}; \textbf{+4.2\%} over baselines on MMLU/GSM8K
+\end{itemize}
+}

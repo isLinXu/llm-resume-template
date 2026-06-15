@@ -1,0 +1,87 @@
+%% ============================================================
+%%  themes-preview.tex — 主题色预览文档
+%% ------------------------------------------------------------
+%%  编译后将看到当前主题下所有核心原语的视觉效果。
+%%  切换不同主题：修改下方 \settheme{...} 即可。
+%% ============================================================
+
+\documentclass[zh]{resume-pro}
+
+%% 可选主题：
+%   techblue / businessblack / academicgray / energyorange
+%   innovationgreen / professionalpurple / crimson / ocean
+\settheme{techblue}
+
+\name{主题预览}
+\tagline{resume-pro 视觉规范}
+\keywords{展示章节标题 \textbullet{} 卡片 \textbullet{} 标签 \textbullet{} 进度条}
+\email{preview@example.com}
+\github{hertz}
+\location{北京}
+
+\begin{document}
+
+\makeheader
+
+\begin{abstract}
+本文档展示 resume-pro 在当前主题下的所有核心视觉组件：标题、列表、技能进度条、技能标签、徽章、项目卡片、开源条目、论文条目、奖项条目等。
+\end{abstract}
+
+\sectionTitle{章节标题样式}{\faPaintBrush}
+
+\textbf{加粗文字} / \textit{斜体文字} / \texttt{等宽文字} / \href{https://example.com}{超链接}
+
+\begin{itemize}
+  \item 一级列表项使用 \texttt{accentcolor} 渲染的右箭头
+  \item 数字与英文混排：99.8\% accuracy on benchmark
+  \begin{itemize}
+    \item 二级列表项使用小实心圆点
+  \end{itemize}
+\end{itemize}
+
+\sectionTitle{技能可视化}{\faLaptopCode}
+
+\skillbar{Python \textbullet{} PyTorch}{9}
+\skillbar{大模型微调（LoRA / RLHF）}{8}
+\skilldots{中文（母语）}{5}
+\skilldots{英文（CET-6）}{4}
+
+\vspace{0.4em}
+\textbf{技术标签} \quad
+\skilltagAccent{LLM} \skilltag{RAG} \skilltag{Agent} \skilltag{LoRA} \skilltag{vLLM}
+
+\vspace{0.3em}
+\textbf{徽章} \quad
+\badge{Stars}{562} \badge{License}{MIT} \badge{Build}{passing}
+
+\sectionTitle{项目卡片}{\faProjectDiagram}
+
+\projectCard{示例项目 Demo}{2024.01 -- 2024.05}
+{一句话说明项目目标与亮点}
+{%
+\begin{itemize}
+  \item 关键技术点 1
+  \item 关键技术点 2
+\end{itemize}
+}
+{\faGithub\ github.com/demo/project}
+
+\openSourceItem{example/awesome-llm}{1.2k}{210}{Python}
+{开源 LLM 工具库示例项目}
+{%
+\begin{itemize}
+  \item 贡献 PR 若干，修复关键 Bug
+\end{itemize}
+}
+
+\sectionTitle{论文 / 荣誉}{\faTrophy}
+
+\publicationItem
+{An Example Paper on Visual Specification}
+{\textbf{Preview Demo}, Co Author}
+{NeurIPS 2024 (CCF-A)}
+{\faFilePdf\ Paper \quad \faGithub\ Code}
+
+\awardItem{示例荣誉名称}{2024}{说明文字，例如评奖范围、排名、依据等}
+
+\end{document}
