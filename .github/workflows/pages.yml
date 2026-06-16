@@ -49,11 +49,16 @@ jobs:
             danteev/texlive:latest \
             bash -c '
               set -euo pipefail
-              echo "=== Installing Python deps ==="
-              pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
-              
-              echo "=== Generating placeholder logos ==="
-              cd logos && python3 build_placeholders.py --svg && cd ..
+              echo "=== Checking placeholder logos ==="
+              cd logos
+              if ls *.png >/dev/null 2>&1 && [ "$(ls *.png | wc -l)" -gt 5 ]; then
+                echo "Logo PNGs already present ($(ls *.png | wc -l) files), skipping generation"
+              else
+                echo "Logos missing, attempting generation..."
+                python3 -m pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
+                python3 build_placeholders.py --svg 2>/dev/null || echo "WARNING: Logo generation failed, continuing anyway"
+              fi
+              cd ..
               
               echo "=== Building main resume ==="
               xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -5

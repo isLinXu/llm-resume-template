@@ -39,14 +39,17 @@ jobs:
           key: tex-build-${{ hashFiles('latex_resume_pro/**/*.tex', 'latex_resume_pro/**/*.cls') }}
           restore-keys: tex-build-
 
-      - name: Install Python dependencies
-        run: |
-          pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
-
-      - name: Generate placeholder logos
+      - name: Generate placeholder logos (if missing)
         run: |
           cd latex_resume_pro/logos
-          python3 build_placeholders.py --svg
+          # Skip if logo PNGs already exist in the repo
+          if ls *.png >/dev/null 2>&1 && [ "$(ls *.png | wc -l)" -gt 5 ]; then
+            echo "Logo PNGs already present ($(ls *.png | wc -l) files), skipping generation"
+          else
+            echo "Logos missing, attempting generation..."
+            python3 -m pip install --quiet Pillow 2>/dev/null || pip3 install --quiet Pillow 2>/dev/null || true
+            python3 build_placeholders.py --svg 2>/dev/null || echo "WARNING: Logo generation failed, continuing anyway"
+          fi
 
       - name: Lint LaTeX files
         continue-on-error: true
