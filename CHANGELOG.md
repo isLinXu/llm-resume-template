@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.8.0] - 2026-06-17
+
+### Fixed — CI/CD 稳定性
+- **pages.yml / build.yml**：Logo 生成步骤改为条件执行（PNGs 已在仓库中时跳过），修复 `ModuleNotFoundError: No module named 'PIL'` 导致 CI 全链路中断的问题
+- **build.yml**：`Commit PDFs to repo` 步骤改用 GitHub API（`createOrUpdateFileContents`）替代容器内 `git push`，修复 exit code 128 权限错误
+- **build.yml**：`Commit PDFs` 步骤添加 `continue-on-error: true`，即使 API 调用失败也不阻塞构建
+- **GitHub Pages**：从 legacy 模式（docs/ 目录）切换为 workflow 模式，使 `pages.yml` 正确接管部署
+
+### Changed — CI/CD 优化
+- 两个工作流均添加 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` 环境变量，兼容 Node.js 24 迁移
+- **README.md**：替换 `YOUR_GITHUB_USERNAME` 占位符为实际用户名 `isLinXu`
+- **README.md**：主题色表从 `via.placeholder.com` 迁移到 `shields.io` 色块（避免外部依赖）
+- **README.md**：修复项目结构目录名和 Pages URL 中的仓库名
+
+### Added — 在线体验增强
+- **editor.html**：自动从 GitHub Pages URL 检测仓库 owner（`islinxu.github.io` → `isLinXu`）
+- **index.html**：添加 `og:url` 和 `<link rel="canonical">` SEO 标签
+- **sw.js**：升级到 v3.8.0，新增 PDF 列表页缓存、导航请求离线回退到 index.html、静态资源 cache-first 策略
+
 ## [3.7.0] - 2026-06-15
 
 ### Added — 在线编辑器（GitHub Pages）

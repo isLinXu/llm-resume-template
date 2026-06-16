@@ -237,7 +237,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
       <div class="sep"></div>
       <button class="abtn pri" onclick="build()">🚀 构建</button>
       <button class="abtn" onclick="showGH()">⚙</button>
-      <span style="font-size:9px;color:var(--text3);margin-left:4px">v3.7.0</span>
+      <span style="font-size:9px;color:var(--text3);margin-left:4px">v3.8.0</span>
     </div>
   </header>
 
@@ -489,7 +489,7 @@ DF['config.tex']=`%% ===========================================================
 
 %% ---------- 5. 页脚 ----------
 \\fileinfo{\\faCopyright\\ 2025--2026 \\rpName\\ \\textbullet\\ Built with \\LaTeX}
-\\version{v3.7.0 \\textbullet\\ \\today}
+\\version{v3.8.0 \\textbullet\\ \\today}
 
 %% ---------- 6. QR 码（可选）----------
 % \\qrlink{https://hertz.dev}
@@ -682,6 +682,11 @@ function loadLS(){
       document.getElementById('ghOwner').value=c.owner||'';
       document.getElementById('ghRepo').value=c.repo||'llm-resume-template';
       document.getElementById('ghBranch').value=c.branch||'main';
+    }
+    // Auto-detect owner from GitHub Pages URL
+    if(!document.getElementById('ghOwner').value){
+      const m=location.hostname.match(/^([^.]+)\.github\.io$/i);
+      if(m) document.getElementById('ghOwner').value=m[1];
     }
   }catch(e){}
 }

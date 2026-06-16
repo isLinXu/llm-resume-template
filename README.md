@@ -8,8 +8,7 @@
 
 专为 **AI / 算法 / 大模型 / 全栈** 等技术岗位优化，兼顾排版美感、内容密度与 ATS 友好
 
-<!-- TODO: Replace YOUR_GITHUB_USERNAME with your actual GitHub username -->
-[![Build PDFs](https://github.com/YOUR_GITHUB_USERNAME/LLM-Resume-Template/actions/workflows/build.yml/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/LLM-Resume-Template/actions/workflows/build.yml)
+[![Build PDFs](https://github.com/isLinXu/llm-resume-template/actions/workflows/build.yml/badge.svg)](https://github.com/isLinXu/llm-resume-template/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![XeLaTeX](https://img.shields.io/badge/Compiler-XeLaTeX-blue.svg)](https://www.overleaf.com/learn/XeLaTeX)
 
@@ -40,14 +39,14 @@
 
 | 主题 | 色块 | 主色 | 推荐场景 |
 |:---|:---:|:---|:---|
-| `techblue` | ![](https://via.placeholder.com/20/0B3D91/0B3D91) | `#0B3D91` | AI / 算法 / 后端（**默认**） |
-| `businessblack` | ![](https://via.placeholder.com/20/111827/111827) | `#111827` | 管理 / 咨询 / 金融 |
-| `academicgray` | ![](https://via.placeholder.com/20/1F2937/1F2937) | `#1F2937` | 科研 / 教职 / 申博 |
-| `energyorange` | ![](https://via.placeholder.com/20/C2410C/C2410C) | `#C2410C` | 产品 / 设计 / 创业 |
-| `innovationgreen` | ![](https://via.placeholder.com/20/065F46/065F46) | `#065F46` | 环保 / 生物 / 新能源 |
-| `professionalpurple` | ![](https://via.placeholder.com/20/5B21B6/5B21B6) | `#5B21B6` | 艺术 / 媒体 / 创意 |
-| `crimson` | ![](https://via.placeholder.com/20/9F1239/9F1239) | `#9F1239` | 暗红 / 法律 / 文史 |
-| `ocean` | ![](https://via.placeholder.com/20/0E7490/0E7490) | `#0E7490` | 海洋青 / 教育 |
+| `techblue` | ![techblue](https://img.shields.io/badge/█-0B3D91-0B3D91) | `#0B3D91` | AI / 算法 / 后端（**默认**） |
+| `businessblack` | ![businessblack](https://img.shields.io/badge/█-111827-111827) | `#111827` | 管理 / 咨询 / 金融 |
+| `academicgray` | ![academicgray](https://img.shields.io/badge/█-1F2937-1F2937) | `#1F2937` | 科研 / 教职 / 申博 |
+| `energyorange` | ![energyorange](https://img.shields.io/badge/█-C2410C-C2410C) | `#C2410C` | 产品 / 设计 / 创业 |
+| `innovationgreen` | ![innovationgreen](https://img.shields.io/badge/█-065F46-065F46) | `#065F46` | 环保 / 生物 / 新能源 |
+| `professionalpurple` | ![professionalpurple](https://img.shields.io/badge/█-5B21B6-5B21B6) | `#5B21B6` | 艺术 / 媒体 / 创意 |
+| `crimson` | ![crimson](https://img.shields.io/badge/█-9F1239-9F1239) | `#9F1239` | 暗红 / 法律 / 文史 |
+| `ocean` | ![ocean](https://img.shields.io/badge/█-0E7490-0E7490) | `#0E7490` | 海洋青 / 教育 |
 
 > 💡 自定义主题：`\customtheme{0F172A}{2563EB}{E6EEFB}`（主色 / 次色 / 浅底 HEX）
 
@@ -120,7 +119,7 @@ docker run --rm -v $(pwd)/latex_resume_pro:/workspace resume-builder
 
 1. **Fork 本仓库**到你的 GitHub 账号
 2. 进入仓库 **Settings → Pages → Source** 选择 `GitHub Actions`
-3. 访问 `https://你的用户名.github.io/LLM-Resume-Template/` 即可使用在线编辑器
+3. 访问 `https://你的用户名.github.io/llm-resume-template/` 即可使用在线编辑器
 4. 在编辑器中修改内容 → 点击「🚀 构建PDF」→ CI 自动编译并部署 PDF
 
 > 💡 在线编辑器功能一览：
@@ -155,7 +154,7 @@ docker run --rm -v $(pwd)/latex_resume_pro:/workspace resume-builder
 ## 🗂️ 项目结构
 
 ```
-LLM-Resume-Template-main/
+llm-resume-template/
 ├── README.md                    # 本文件
 ├── CONTRIBUTING.md             # 贡献指南
 ├── LICENSE                      # MIT 许可
