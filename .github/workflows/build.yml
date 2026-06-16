@@ -151,6 +151,7 @@ jobs:
 
       - name: Commit PDFs to repo (main branch only)
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
