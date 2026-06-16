@@ -157,7 +157,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 let doc=null, pg=1, sc=1.5, totalPages=0, url='', thumbsRendered=false;
 const params=new URLSearchParams(location.search);
-const base=params.get('base')||'../pdfs/';
+const base=params.get('base')||'./pdfs/';
 
 // Determine initial PDF from URL param or default
 const initPdf=params.get('pdf')||'resume-pro-zh.pdf';
@@ -307,7 +307,7 @@ window.printPDF=()=>{
 
 // Try loading from different paths
 window.tryLocal=()=>{
-  const altBase='../latex_resume_pro/';
+  const altBase='./pdfs/';
   url=altBase+document.getElementById('sel').value;
   load(url);
 };

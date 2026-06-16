@@ -381,7 +381,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
     <div class="modal-body">
       <div class="fld"><label>GitHub Token (repo 权限)</label><input type="password" id="ghToken" placeholder="ghp_xxx" style="width:100%"></div>
       <div class="fld"><label>Owner</label><input id="ghOwner" style="width:100%"></div>
-      <div class="fld"><label>Repo</label><input id="ghRepo" value="LLM-Resume-Template" style="width:100%"></div>
+      <div class="fld"><label>Repo</label><input id="ghRepo" value="llm-resume-template" style="width:100%"></div>
       <div class="fld"><label>Branch</label><input id="ghBranch" value="main" style="width:100%"></div>
       <p style="font-size:10px;color:var(--text3);margin-top:8px">💡 Token 需要 repo 权限才能提交文件。配置后点击「🚀 构建」即可自动编译。</p>
     </div>
@@ -680,7 +680,7 @@ function loadLS(){
       const c=JSON.parse(gh);
       document.getElementById('ghToken').value=c.token||'';
       document.getElementById('ghOwner').value=c.owner||'';
-      document.getElementById('ghRepo').value=c.repo||'LLM-Resume-Template';
+      document.getElementById('ghRepo').value=c.repo||'llm-resume-template';
       document.getElementById('ghBranch').value=c.branch||'main';
     }
   }catch(e){}
