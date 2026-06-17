@@ -1,0 +1,23 @@
+# Configuration for Stale Bot
+# https://github.com/actions/stale
+
+days-before-stale: 60
+days-before-close: 7
+stale-label: stale
+exempt-labels: pinned,security,enhancement
+
+stale-issue-message: >
+  This issue has been automatically marked as stale because it has not had
+  recent activity. It will be closed if no further activity occurs within 7 days.
+  Thank you for your contributions!
+
+stale-pr-message: >
+  This PR has been automatically marked as stale because it has not had
+  recent activity. It will be closed if no further activity occurs within 7 days.
+  Thank you for your contributions!
+
+close-issue-message: >
+  This issue was closed because it has been stalled for 7 days with no activity.
+
+close-pr-message: >
+  This PR was closed because it has been stalled for 7 days with no activity.
