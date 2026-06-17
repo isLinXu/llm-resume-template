@@ -377,8 +377,19 @@ button:focus:not(:focus-visible){outline:none}
           <button onclick="insertSnippet('\\href{}{}')" title="超链接">🔗 链接</button>
           <button onclick="insertSnippet('\\url{}')" title="URL">🌐 URL</button>
           <button onclick="insertSnippet('\\textbullet{}')" title="圆点分隔">• 圆点</button>
-          <button onclick="insertSnippet('$\\cdot
-      <!-- Search bar -->
+          <button onclick="insertSnippet('$\\cdot$')" title="中点">· 中点</button>
+          <button onclick="insertSnippet('\\ldots')" title="省略号">… 省略</button>
+          <button onclick="insertSnippet('---')" title="破折号">— 破折</button>
+          <button onclick="insertSnippet('\\~{}')" title="波浪号">~ 波浪</button>
+          <button onclick="insertSnippet('\\^{}')" title="脱字号">^ 脱字</button>
+          <button onclick="insertSnippet('\\&')" title="& 符号">&amp; &amp;符</button>
+          <button onclick="insertSnippet('\\%')" title="百分号">% 百分</button>
+          <button onclick="insertSnippet('\\#')" title="井号"># 井号</button>
+          <button onclick="insertSnippet('\\_')" title="下划线">_ 下划</button>
+          <button onclick="insertSnippet('\\begin{itemize}\\n  \\item \\n\\end{itemize}')" title="列表">📋 列表</button>
+          <button onclick="insertSnippet('\\begin{enumerate}\\n  \\item \\n\\end{enumerate}')" title="编号列表">🔢 编号</button>
+        </div>
+      </div>
       <div class="search-bar" id="searchBar">
         <input id="searchInput" placeholder="搜索..." oninput="doSearch()">
         <input id="replaceInput" placeholder="替换...">
@@ -925,12 +936,14 @@ function toggleSnippets(){
 function insertSnippet(text){
   const ed=document.getElementById('editor');
   const s=ed.selectionStart,e=ed.selectionEnd;
-  ed.value=ed.value.substring(0,s)+text+ed.value.substring(e);
-  const braceIdx=text.indexOf('{}');
+  // Convert \n escape sequences to actual newlines
+  const resolved=text.replace(/\\n/g,'\n');
+  ed.value=ed.value.substring(0,s)+resolved+ed.value.substring(e);
+  const braceIdx=resolved.indexOf('{}');
   if(braceIdx>=0){
     ed.selectionStart=ed.selectionEnd=s+braceIdx+1;
   }else{
-    ed.selectionStart=ed.selectionEnd=s+text.length;
+    ed.selectionStart=ed.selectionEnd=s+resolved.length;
   }
   ed.focus();
   ed.dispatchEvent(new Event('input'));
