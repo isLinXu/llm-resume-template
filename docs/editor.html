@@ -196,12 +196,47 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 @keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes toast-bar{from{width:100%}to{width:0}}
 
-@media(max-width:900px){.side{width:0;border:none}.pv-area{display:none}.resizer{display:none}}
+/* === SNIPPETS BAR === */
+.snippets-bar{padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.snippets-grid{display:flex;flex-wrap:wrap;gap:4px}
+.snippets-grid button{padding:3px 8px;font-size:10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.snippets-grid button:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+
+@media(max-width:900px){
+  .side{width:0;border:none;overflow:hidden}
+  .pv-area{display:none}
+  .resizer{display:none}
+  .hdr-acts{gap:3px}
+  .abtn{padding:3px 6px;font-size:10px}
+  .abtn span.hide-sm{display:none}
+}
+
+@media(max-width:600px){
+  .hdr{padding:0 8px;gap:4px;height:44px}
+  .hdr-logo{font-size:12px}
+  .hdr-logo .em{font-size:14px}
+  .hdr-center{display:none}
+  .hdr-acts{gap:2px}
+  .abtn{padding:3px 5px;font-size:9px}
+  .ed-status{font-size:9px;padding:2px 6px}
+  .modal{width:95%;margin:10px}
+  .modal-body{padding:12px}
+  .search-bar{padding:4px 8px}
+  .search-bar input{font-size:11px;padding:3px 6px}
+  .form-row{flex-direction:column}
+  .form-row .fld{width:100%}
+}
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* Focus visible for keyboard navigation */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus:not(:focus-visible){outline:none}
+.abtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* Drop zone overlay */
 .drop-zone{position:fixed;inset:0;background:rgba(91,141,239,.15);border:3px dashed var(--accent);z-index:3000;display:none;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);pointer-events:none}
@@ -212,43 +247,43 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 <body>
 <div class="app">
   <!-- Header -->
-  <header class="hdr">
-    <div class="hdr-logo"><span class="em">📄</span> Resume<b>Pro</b></div>
+  <header class="hdr" role="banner">
+    <div class="hdr-logo"><span class="em" aria-hidden="true">📄</span> Resume<b>Pro</b></div>
     <div class="hdr-center">
-      <div class="mode-toggle">
-        <button class="mode-btn on" id="modeForm" onclick="setMode('form')">📝 表单</button>
-        <button class="mode-btn" id="modeCode" onclick="setMode('code')">💻 代码</button>
+      <div class="mode-toggle" role="radiogroup" aria-label="编辑模式">
+        <button class="mode-btn on" id="modeForm" onclick="setMode('form')" role="radio" aria-checked="true">📝 表单</button>
+        <button class="mode-btn" id="modeCode" onclick="setMode('code')" role="radio" aria-checked="false">💻 代码</button>
       </div>
     </div>
     <div class="hdr-acts">
-      <button class="abtn" onclick="togSide()" title="侧栏 (Ctrl+B)">☰</button>
-      <button class="abtn" onclick="togPv()" title="预览 (Ctrl+J)">👁</button>
-      <div class="sep"></div>
-      <button class="abtn" onclick="toggleSearch()" title="搜索 (Ctrl+F)">🔍</button>
-      <button class="abtn" onclick="undo()" title="撤销 (Ctrl+Z)">↩</button>
-      <button class="abtn" onclick="redo()" title="重做 (Ctrl+Y)">↪</button>
-      <div class="sep"></div>
-      <button class="abtn" onclick="dlSource()">⬇ 源码</button>
-      <button class="abtn" onclick="dlZip()">📦 ZIP</button>
-      <button class="abtn" onclick="dlPDF()" title="下载PDF">⬇ PDF</button>
-      <div class="sep"></div>
-      <button class="abtn" onclick="importConfig()" title="导入配置">📥 导入</button>
-      <button class="abtn" onclick="exportConfig()" title="导出配置">📤 导出</button>
-      <div class="sep"></div>
-      <button class="abtn pri" onclick="build()">🚀 构建</button>
-      <button class="abtn" onclick="showGH()">⚙</button>
-      <span style="font-size:9px;color:var(--text3);margin-left:4px">v3.8.0</span>
+      <button class="abtn" onclick="togSide()" title="侧栏 (Ctrl+B)" aria-label="切换侧栏">☰</button>
+      <button class="abtn" onclick="togPv()" title="预览 (Ctrl+J)" aria-label="切换预览">👁</button>
+      <div class="sep" aria-hidden="true"></div>
+      <button class="abtn" onclick="toggleSearch()" title="搜索 (Ctrl+F)" aria-label="搜索替换">🔍</button>
+      <button class="abtn" onclick="undo()" title="撤销 (Ctrl+Z)" aria-label="撤销">↩</button>
+      <button class="abtn" onclick="redo()" title="重做 (Ctrl+Y)" aria-label="重做">↪</button>
+      <div class="sep" aria-hidden="true"></div>
+      <button class="abtn" onclick="dlSource()" aria-label="下载源码">⬇ 源码</button>
+      <button class="abtn" onclick="dlZip()" aria-label="下载 ZIP 包">📦 ZIP</button>
+      <button class="abtn" onclick="dlPDF()" title="下载PDF" aria-label="下载 PDF">⬇ PDF</button>
+      <div class="sep" aria-hidden="true"></div>
+      <button class="abtn" onclick="importConfig()" title="导入配置" aria-label="导入配置">📥 导入</button>
+      <button class="abtn" onclick="exportConfig()" title="导出配置" aria-label="导出配置">📤 导出</button>
+      <div class="sep" aria-hidden="true"></div>
+      <button class="abtn pri" onclick="build()" aria-label="构建并部署">🚀 构建</button>
+      <button class="abtn" onclick="showGH()" aria-label="GitHub 设置">⚙</button>
+      <span style="font-size:9px;color:var(--text3);margin-left:4px" aria-label="版本号">v3.9.0</span>
     </div>
   </header>
 
   <div class="main">
     <!-- Sidebar -->
-    <aside class="side" id="side">
-      <div class="tabs">
-        <div class="tab on" onclick="setTab(0)">🎨 主题</div>
-        <div class="tab" onclick="setTab(1)">👤 信息</div>
-        <div class="tab" onclick="setTab(2)">🧩 模块</div>
-        <div class="tab" onclick="setTab(3)">🔄 变体</div>
+    <aside class="side" id="side" role="complementary" aria-label="设置面板">
+      <div class="tabs" role="tablist">
+        <div class="tab on" onclick="setTab(0)" role="tab" aria-selected="true" tabindex="0">🎨 主题</div>
+        <div class="tab" onclick="setTab(1)" role="tab" aria-selected="false" tabindex="-1">👤 信息</div>
+        <div class="tab" onclick="setTab(2)" role="tab" aria-selected="false" tabindex="-1">🧩 模块</div>
+        <div class="tab" onclick="setTab(3)" role="tab" aria-selected="false" tabindex="-1">🔄 变体</div>
       </div>
 
       <!-- Tab 0: Theme -->
@@ -327,7 +362,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
         <div class="sep"></div>
         <button class="fbtn" onclick="toggleSearch()" title="Ctrl+F">🔍 搜索</button>
         <button class="fbtn" onclick="fmtCode()">✨ 格式化</button>
+        <button class="fbtn" onclick="toggleSnippets()" title="LaTeX 片段">📎 片段</button>
       </div>
+      <!-- Snippets panel -->
+      <div class="snippets-bar" id="snippetsBar" style="display:none">
+        <div class="snippets-grid">
+          <button onclick="insertSnippet('\\textbf{}')" title="加粗">𝐁 加粗</button>
+          <button onclick="insertSnippet('\\textit{}')" title="斜体">𝐼 斜体</button>
+          <button onclick="insertSnippet('\\underline{}')" title="下划线">U̲ 下划线</button>
+          <button onclick="insertSnippet('\\texttt{}')" title="等宽">𝚃 等宽</button>
+          <button onclick="insertSnippet('\\emph{}')" title="强调">𝑒 强调</button>
+          <button onclick="insertSnippet('\\footnotesize{}')" title="小号">⬇ 小号</button>
+          <button onclick="insertSnippet('\\large{}')" title="大号">⬆ 大号</button>
+          <button onclick="insertSnippet('\\href{}{}')" title="超链接">🔗 链接</button>
+          <button onclick="insertSnippet('\\url{}')" title="URL">🌐 URL</button>
+          <button onclick="insertSnippet('\\textbullet{}')" title="圆点分隔">• 圆点</button>
+          <button onclick="insertSnippet('$\\cdot
       <!-- Search bar -->
       <div class="search-bar" id="searchBar">
         <input id="searchInput" placeholder="搜索..." oninput="doSearch()">
@@ -342,7 +392,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
       <!-- Code editor -->
       <div class="ed-wrap" id="codeWrap">
         <pre class="ed-highlight" id="highlight"></pre>
-        <textarea id="editor" spellcheck="false"></textarea>
+        <textarea id="editor" spellcheck="false" aria-label="LaTeX 代码编辑器"></textarea>
       </div>
       <!-- Form editor -->
       <div class="form-ed" id="formWrap"></div>
@@ -380,6 +430,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
     <div class="modal-hdr"><h3>⚙️ GitHub 配置</h3><button class="modal-x" onclick="closeM('ghModal')">✕</button></div>
     <div class="modal-body">
       <div class="fld"><label>GitHub Token (repo 权限)</label><input type="password" id="ghToken" placeholder="ghp_xxx" style="width:100%"></div>
+      <p style="font-size:10px;color:var(--orange);margin-top:4px">⚠️ Token 将存储在浏览器 localStorage 中（明文）。建议使用 Fine-grained Token 且仅授予必要权限，不用时可清空。</p>
       <div class="fld"><label>Owner</label><input id="ghOwner" style="width:100%"></div>
       <div class="fld"><label>Repo</label><input id="ghRepo" value="llm-resume-template" style="width:100%"></div>
       <div class="fld"><label>Branch</label><input id="ghBranch" value="main" style="width:100%"></div>
@@ -410,6 +461,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 
 <div class="toast-box" id="toastBox"></div>
 <div class="drop-zone" id="dropZone">📂 松开以导入 .tex 文件</div>
+
+<!-- SW Update Banner -->
+<div id="swBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:2000;background:var(--bg2);border-top:1px solid var(--accent);padding:10px 20px;display:none;align-items:center;gap:12px;font-size:13px">
+  <span>🔄 新版本可用</span>
+  <button class="abtn pri" onclick="swReload()" style="font-size:12px">立即更新</button>
+  <button class="abtn" onclick="document.getElementById('swBanner').style.display='none'" style="font-size:12px">稍后</button>
+</div>
 
 <script>
 // ===== DATA =====
@@ -791,7 +849,7 @@ function swFile(btn,fn){
   const name=fn||btn?.dataset.f;
   if(name)loadFile(name);
 }
-function markMod(){S.mod=true;setSt('mod','已修改');}
+function markMod(){S.mod=true;setSt('mod','已修改 · 自动保存中...');}
 function setSt(t,txt){const d=document.getElementById('sdot');d.className='sdot '+t;document.getElementById('stxt').textContent=txt;}
 function updChars(){
   const v=document.getElementById('editor').value;
@@ -857,6 +915,26 @@ function updPos(){
   const v=ed.value.substring(0,ed.selectionStart);
   const ls=v.split('\n');
   document.getElementById('cpos').textContent=`行 ${ls.length}, 列 ${ls[ls.length-1].length+1}`;
+}
+
+// ===== SNIPPETS =====
+function toggleSnippets(){
+  const bar=document.getElementById('snippetsBar');
+  bar.style.display=bar.style.display==='none'?'block':'none';
+}
+function insertSnippet(text){
+  const ed=document.getElementById('editor');
+  const s=ed.selectionStart,e=ed.selectionEnd;
+  ed.value=ed.value.substring(0,s)+text+ed.value.substring(e);
+  const braceIdx=text.indexOf('{}');
+  if(braceIdx>=0){
+    ed.selectionStart=ed.selectionEnd=s+braceIdx+1;
+  }else{
+    ed.selectionStart=ed.selectionEnd=s+text.length;
+  }
+  ed.focus();
+  ed.dispatchEvent(new Event('input'));
+  markMod();saveLS();histPush();
 }
 
 // ===== SEARCH & REPLACE =====
@@ -1767,14 +1845,44 @@ init();
 
 <!-- ES Module support for modern browsers -->
 <script type="module">
-  // Register Service Worker for offline support
+  // Register Service Worker for offline support + update notifications
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(reg => {
       console.log('SW registered:', reg.scope);
+      // Check for updates periodically
+      setInterval(() => reg.update(), 30 * 60 * 1000);
+      // Listen for waiting worker
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available
+            const banner = document.getElementById('swBanner');
+            if (banner) banner.style.display = 'flex';
+          }
+        });
+      });
+      // Also check if there's already a waiting worker
+      if (reg.waiting) {
+        const banner = document.getElementById('swBanner');
+        if (banner) banner.style.display = 'flex';
+      }
     }).catch(err => {
       console.warn('SW registration failed:', err);
     });
   }
+
+  // swReload: activate new Service Worker
+  window.swReload = function() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg && reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    }
+    window.location.reload();
+  };
 
   // Import JSZip for ZIP download functionality
   try {
@@ -1789,5 +1897,6 @@ init();
   window.dispatchEvent(new Event('es-modules-loaded'));
   console.log('Editor ES module layer initialized');
 </script>
+
 </body>
 </html>

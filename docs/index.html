@@ -14,6 +14,21 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://islinxu.github.io/llm-resume-template/">
 <link rel="canonical" href="https://islinxu.github.io/llm-resume-template/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Resume Pro",
+  "description": "专业 LaTeX 简历模板 — 模块化 · 可主题化 · 在线编辑 · 自动构建",
+  "url": "https://islinxu.github.io/llm-resume-template/",
+  "applicationCategory": "Productivity",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "programmingLanguage": "LaTeX",
+  "license": "https://opensource.org/licenses/MIT",
+  "featureList": ["8 theme colors", "11 variants", "Online editor", "GitHub CI/CD", "Chinese & English"]
+}
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -43,6 +58,10 @@ a:hover{text-decoration:underline}
 .anim.visible.delay-2{transition-delay:.2s}
 .anim.visible.delay-3{transition-delay:.3s}
 .anim.visible.delay-4{transition-delay:.4s}
+
+/* Focus visible for keyboard navigation */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
 
 /* Nav */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;height:52px;padding:0 24px;background:rgba(8,9,16,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:all .3s}
@@ -193,8 +212,8 @@ a:hover{text-decoration:underline}
 </head>
 <body>
 
-<nav class="nav" id="nav">
-  <div class="nav-logo">📄 Resume<b>Pro</b></div>
+<nav class="nav" id="nav" role="navigation" aria-label="主导航">
+  <div class="nav-logo"><span aria-hidden="true">📄</span> Resume<b>Pro</b></div>
   <div class="nav-links">
     <a href="#features">特性</a>
     <a href="#comparison">对比</a>
@@ -204,7 +223,7 @@ a:hover{text-decoration:underline}
     <a href="#faq">FAQ</a>
     <a href="editor.html">编辑器</a>
   </div>
-  <button class="nav-mobile" onclick="document.getElementById('mobileMenu').classList.toggle('open')">☰</button>
+  <button class="nav-mobile" onclick="document.getElementById('mobileMenu').classList.toggle('open')" aria-label="打开菜单" aria-expanded="false">☰</button>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
   <a href="#features" onclick="this.parentElement.classList.remove('open')">特性</a>
@@ -412,8 +431,20 @@ function togFAQ(el){
   }
 })();
 
-// Service Worker registration
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+// Service Worker registration + update notification
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    setInterval(()=>reg.update(),30*60*1000);
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      nw.addEventListener('statechange',()=>{
+        if(nw.state==='installed'&&navigator.serviceWorker.controller){
+          toast('i','新版本可用，刷新页面即可更新');
+        }
+      });
+    });
+  }).catch(()=>{});
+}
 </script>
 </body>
 </html>

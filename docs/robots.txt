@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /pdfs/
+
+Sitemap: https://islinxu.github.io/llm-resume-template/sitemap.xml

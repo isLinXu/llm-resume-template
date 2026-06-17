@@ -1,5 +1,5 @@
-// Resume Pro — Service Worker v3.8.0
-const CACHE_NAME = 'resume-pro-v3.8.0';
+// Resume Pro — Service Worker v3.9.0
+const CACHE_NAME = 'resume-pro-v3.9.0';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,13 @@ self.addEventListener('activate', event => {
     )
   );
   self.clients.claim();
+});
+
+// Handle SKIP_WAITING message from page
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Fetch: network-first with cache fallback
