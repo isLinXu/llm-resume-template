@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-06-22
+
 ### Added
+- `\clearlogos` command in `resume-pro.cls` for one-shot clearing of all Logo macros (replaces 22 manual `\def` lines in `variant-minimalist.tex`)
+- `VERSION` file for single-source version management
+- Python test suite (`scripts/test_suite.py`) for static analysis: version consistency, input path validity, Logo macro coverage, theme validity, command definition check, duplicate file detection
 - SEO: `sitemap.xml`, `robots.txt`, JSON-LD structured data on landing page
 - Accessibility: ARIA labels, keyboard focus indicators, semantic landmarks
 - Service Worker update notification banner
@@ -23,9 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preconnect hints for CDN resources
 
 ### Changed
-- Version bumped to v3.9.0
 - Improved mobile viewport handling in editor
 - Enhanced keyboard navigation throughout the app
+
+### Fixed
+- Unified version numbers across `resume-pro.cls`, `config.tex`, `README.md`, `latex_resume_pro/README.md` to `v3.9.0`
+- Removed duplicate root `logos/` directory (145 files), keeping `latex_resume_pro/logos/` as the single source
+- Removed stale `docs/editor.html.bak` backup file
+- Fixed `variant-minimalist.tex` to clear all 52 built-in Logo macros (previously only 22 were manually cleared, leaving 30 unhandled)
 
 ## [3.8.0] - 2026-06-15
 

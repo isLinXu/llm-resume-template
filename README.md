@@ -170,7 +170,7 @@ llm-resume-template/
 │   └── preview.html            #   PDF 预览器（缩略图+全屏+缩放）
 ├── hertz.jpg                    # 头像源图
 └── latex_resume_pro/            # 核心模板目录
-    ├── resume-pro.cls           # 样式类（核心样式 / 命令 / 主题系统）v3.7
+    ├── resume-pro.cls           # 样式类（核心样式 / 命令 / 主题系统）v3.9
     ├── resume-pro-zh.tex        # 中文主文件（装配模块）
     ├── config.tex               # ⭐ 主要修改这个：个人信息 + 主题 + Logo + QR
     ├── quickstart.tex           # 极简单文件示例

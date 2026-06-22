@@ -1,5 +1,5 @@
 %%
-%% resume-pro.cls — 专业 LaTeX 简历样式类（Pro v3.6.1）
+%% resume-pro.cls — 专业 LaTeX 简历样式类（Pro v3.9.0）
 %% --------------------------------------------------------
 %%   设计准则：
 %%     - 经典学术简历风格：克制装饰、细线分隔、粗体语义层级
@@ -18,7 +18,7 @@
 %%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{resume-pro}[2026/06/06 v3.6.1 Compact Professional Resume Class]
+\ProvidesClass{resume-pro}[2026/06/22 v3.9.0 Compact Professional Resume Class]
 
 %% ---------- 类选项 ----------
 \newif\if@rp@zh           \@rp@zhtrue
@@ -195,7 +195,14 @@
     pdfauthor={\ifdef{\@name}{\@name}{Resume}},
     pdftitle={\ifdef{\@name}{Resume — \@name}{Resume}},
     pdfkeywords={\ifdef{\@keywords}{\@keywords}{}},
+    pdflang={\if@rp@zh zh-CN\else en-US\fi},
   }%
+  %% PDF/UA friendly language attribute via xdvipdfmx docinfo
+  \if@rp@zh
+    \special{pdf:docinfo << /Lang (zh-CN) >>}%
+  \else
+    \special{pdf:docinfo << /Lang (en-US) >>}%
+  \fi
 }
 
 %% ---------- 段落与行距（紧凑）----------
@@ -724,6 +731,22 @@
     }%
   }%
 }
+
+%% ---------- Logo 管理辅助（v3.9）----------
+% \clearlogos — 将所有内置 Logo 宏置空（用于 ATS / 极简 / 无 Logo 模式）
+% 与 config.tex 中预定义的 Logo 短宏列表同步，确保极简变体彻底去除所有 Logo
+\newcommand{\clearlogos}{%
+  \forcsvlist{\clearlogo@one}{%
+    tsinghuaLogo,pekingLogo,sjtuLogo,zjuLogo,fudanLogo,ustcLogo,stanfordLogo,mitLogo,ethLogo,%
+    rucLogo,cugLogo,swjtuLogo,scuLogo,nankaiLogo,tjuLogo,dlutLogo,uestcLogo,sudaLogo,xmuLogo,%
+    hnuLogo,csuLogo,caltechLogo,columbiaLogo,upennLogo,nyuLogo,uscLogo,uclaLogo,uiucLogo,%
+    gatechLogo,umichLogo,uwLogo,ucsdLogo,tencentLogo,bytedanceLogo,alibabaLogo,baiduLogo,%
+    meituanLogo,huaweiLogo,xiaomiLogo,didiLogo,nvidiaLogo,openaiLogo,googleLogo,microsoftLogo,%
+    amazonLogo,appleLogo,metaLogo,anthropicLogo,deepseekLogo,moonshotLogo,minimaxLogo,%
+    alibabaCloudLogo%
+  }%
+}
+\newcommand{\clearlogo@one}[1]{\ifdef{#1}{\csdef{#1}{}}{}}
 
 %% ---------- 证书条目 ----------
 % \certItem{<证书名>}{<颁发机构>}{<时间>}

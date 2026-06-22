@@ -7,36 +7,12 @@
 
 \input{config.tex}
 
-%% 单色 + 不要头像
+%% 单色 + 不要头像 + 清除所有 Logo（使用 \clearlogos 替代手动置空 22 个宏）
 \makeatletter
 \let\@photo\@undefined
 \let\@headerlogo\@undefined
 \makeatother
-
-%% 把所有 Logo 短宏置空，避免左侧缩略图占位
-\def\tsinghuaLogo{}
-\def\pekingLogo{}
-\def\sjtuLogo{}
-\def\zjuLogo{}
-\def\fudanLogo{}
-\def\ustcLogo{}
-\def\stanfordLogo{}
-\def\mitLogo{}
-\def\ethLogo{}
-\def\tencentLogo{}
-\def\bytedanceLogo{}
-\def\alibabaLogo{}
-\def\baiduLogo{}
-\def\meituanLogo{}
-\def\huaweiLogo{}
-\def\xiaomiLogo{}
-\def\didiLogo{}
-\def\nvidiaLogo{}
-\def\openaiLogo{}
-\def\googleLogo{}
-\def\microsoftLogo{}
-\def\amazonLogo{}
-\def\appleLogo{}
+\clearlogos
 
 \version{Minimalist \textbullet\ ATS \textbullet\ \today}
 
