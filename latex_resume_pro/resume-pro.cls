@@ -35,7 +35,7 @@
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions\relax
 
-\LoadClass[10.5pt,a4paper]{article}
+\LoadClass[10pt,a4paper]{article}
 
 %% ---------- 必需宏包 ----------
 \RequirePackage{geometry}
@@ -58,6 +58,7 @@
 \RequirePackage{setspace}
 \RequirePackage{relsize}
 \RequirePackage{microtype}
+\RequirePackage{needspace}
 \RequirePackage{xstring}
 \RequirePackage{fancyhdr}
 \RequirePackage{lastpage}
@@ -74,26 +75,26 @@
 
 %% ---------- 字体 ----------
 \defaultfontfeatures{Ligatures=TeX}
-% 西文字体回退链：IBM Plex → DejaVu → Liberation → 系统
-\IfFontExistsTF{IBM Plex Serif}{%
-  \setmainfont{IBM Plex Serif}%
+% 西文字体回退链：Liberation Sans → IBM Plex Sans → DejaVu Sans（无衬线体系，适配技术岗简历）
+\IfFontExistsTF{Liberation Sans}{%
+  \setmainfont{Liberation Sans}%
 }{%
-  \IfFontExistsTF{DejaVu Serif}{%
-    \setmainfont{DejaVu Serif}%
+  \IfFontExistsTF{IBM Plex Sans}{%
+    \setmainfont{IBM Plex Sans}%
   }{%
-    \IfFontExistsTF{Liberation Serif}{%
-      \setmainfont{Liberation Serif}%
+    \IfFontExistsTF{DejaVu Sans}{%
+      \setmainfont{DejaVu Sans}%
     }{}%
   }%
 }
-\IfFontExistsTF{IBM Plex Sans}{%
-  \setsansfont{IBM Plex Sans}%
+\IfFontExistsTF{Liberation Sans}{%
+  \setsansfont{Liberation Sans}%
 }{%
-  \IfFontExistsTF{DejaVu Sans}{%
-    \setsansfont{DejaVu Sans}%
+  \IfFontExistsTF{IBM Plex Sans}{%
+    \setsansfont{IBM Plex Sans}%
   }{%
-    \IfFontExistsTF{Liberation Sans}{%
-      \setsansfont{Liberation Sans}%
+    \IfFontExistsTF{DejaVu Sans}{%
+      \setsansfont{DejaVu Sans}%
     }{}%
   }%
 }
@@ -108,10 +109,10 @@
     }{}%
   }%
 }
-% 中文字体回退链：Noto CJK SC → PingFang SC → WenQuanYi → Source Han
+% 中文字体回退链：Noto Sans CJK SC（黑体，现代技术岗风格）→ PingFang SC → WenQuanYi → Source Han
 \if@rp@zh
-  \IfFontExistsTF{Noto Serif CJK SC}{%
-    \setCJKmainfont{Noto Serif CJK SC}%
+  \IfFontExistsTF{Noto Sans CJK SC}{%
+    \setCJKmainfont{Noto Sans CJK SC}[AutoFakeSlant=0.18]%
   }{%
     \IfFontExistsTF{PingFang SC}{%
       \setCJKmainfont{PingFang SC}%
@@ -119,8 +120,8 @@
       \IfFontExistsTF{WenQuanYi Micro Hei}{%
         \setCJKmainfont{WenQuanYi Micro Hei}%
       }{%
-        \IfFontExistsTF{Source Han Serif SC}{%
-          \setCJKmainfont{Source Han Serif SC}%
+        \IfFontExistsTF{Source Han Sans SC}{%
+          \setCJKmainfont{Source Han Sans SC}%
         }{}%
       }%
     }%
@@ -207,8 +208,12 @@
 
 %% ---------- 段落与行距（紧凑）----------
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.25em}
-\if@rp@compact \linespread{1.06}\else \linespread{1.12}\fi
+\setlength{\parskip}{0.35em}
+\if@rp@compact \linespread{1.06}\else \linespread{1.18}\fi
+
+%% 溢出容忍 & 中文日期（供页脚 / 版本号使用）
+\AtBeginDocument{\emergencystretch=1.5em}
+\newcommand{\zhdate}{\the\year 年\the\month 月\the\day 日}
 
 %% ---------- 章节标题（增强学术风）----------
 %% v3.6: 图标圆底背景 + 渐变细线
@@ -217,8 +222,8 @@
   {\normalsize\bfseries\color{themecolor}\MakeUppercase}
   {}{0pt}
   {}
-  [\vspace{-0.6em}{\color{themecolor!50}\titlerule[0.5pt]}]
-\titlespacing*{\section}{0pt}{0.8ex plus .2ex minus .1ex}{0.3ex plus .1ex}
+  [\vspace{-0.45em}{\color{themecolor!50}\titlerule[0.5pt]}]
+\titlespacing*{\section}{0pt}{1.8ex plus .3ex minus .2ex}{1.2ex plus .2ex}
 
 % \sectionTitle{<title>}{<faIcon>}
 %% v3.6: 图标带圆形主题色浅底背景
@@ -229,7 +234,7 @@
 }
 
 %% ---------- 列表（紧凑）----------
-\setlist{nosep, topsep=0.1em, partopsep=0pt, parsep=0pt, itemsep=0.05em, leftmargin=1.4em}
+\setlist{nosep, topsep=0.25em, partopsep=0pt, parsep=0pt, itemsep=0.28em, leftmargin=1.4em}
 \setlist[itemize,1]{label={\color{accentcolor}\footnotesize\faAngleRight}}
 \setlist[itemize,2]{label={\color{accentcolor!70}\tiny\textbullet}, leftmargin=1.2em}
 \setlist[description,1]{font=\bfseries\color{themecolor}, style=sameline, leftmargin=!}
@@ -344,7 +349,7 @@
     }
   \end{minipage}%
   %% v3.6: 渐变分割线（左深右浅）
-  \par\vspace{-0.2em}
+  \par\vspace{0em}
   \begin{tikzpicture}
     \useasboundingbox (0,0) rectangle (\linewidth,0.6pt);
     \shade[left color=themecolor!70, right color=themecolor!10]
@@ -369,10 +374,10 @@
 %% ---------- 教育经历（紧凑：可选 logo + 学校粗体 + 时间右对齐 + 副行）----------
 % \educationItem[<logo>]{<学校>}{<时间>}{<专业>}{<学位+附注>}
 \NewDocumentCommand{\educationItem}{O{} m m m m}{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   \IfStrEq{#1}{}{%
     \begin{minipage}[c]{\linewidth}
-      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[-0.1em]
+      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
       {\small\itshape\color{accentcolor}#4}\quad{\small\color{darkcolor}#5}
     \end{minipage}%
   }{%
@@ -380,7 +385,7 @@
       \includegraphics[width=2em,height=2em,keepaspectratio]{#1}%
     \end{minipage}\hspace{0.4em}%
     \begin{minipage}[c]{\dimexpr \linewidth - 2.8em\relax}
-      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[-0.1em]
+      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
       {\small\itshape\color{accentcolor}#4}\quad{\small\color{darkcolor}#5}
     \end{minipage}%
   }\par
@@ -389,20 +394,20 @@
 %% ---------- 工作 / 实习 / 科研经历 ----------
 % \experienceItem[<logo>]{<公司/机构>}{<时间>}{<职位>}{<工作内容/itemize>}
 \NewDocumentCommand{\experienceItem}{O{} m m m m}{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   \IfStrEq{#1}{}{%
     \begin{minipage}[t]{\linewidth}
-      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[-0.1em]
-      {\small\itshape\color{accentcolor}#4}\par\vspace{-0.2em}
+      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
+      {\small\itshape\color{accentcolor}#4}\par\vspace{0em}
       #5
     \end{minipage}%
   }{%
-    \begin{minipage}[t]{2.4em}\centering\vspace{-0.2em}%
+    \begin{minipage}[t]{2.4em}\centering\vspace{0em}%
       \includegraphics[width=2em,height=2em,keepaspectratio]{#1}%
     \end{minipage}\hspace{0.4em}%
     \begin{minipage}[t]{\dimexpr \linewidth - 2.8em\relax}
-      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[-0.1em]
-      {\small\itshape\color{accentcolor}#4}\par\vspace{-0.2em}
+      \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
+      {\small\itshape\color{accentcolor}#4}\par\vspace{0em}
       #5
     \end{minipage}%
   }\par
@@ -411,37 +416,37 @@
 %% ---------- 项目卡片（v3.6: 微阴影背景）----------
 % \projectCard{<标题>}{<时间>}{<一句话简介>}{<itemize 详细描述>}{<链接 footer>}
 \newcommand{\projectCard}[5]{%
-  \par\vspace{0.2em}\noindent
+  \par\Needspace{5\baselineskip}\vspace{0.3em}\noindent
   %% 微阴影背景
   \begin{tikzpicture}
     \useasboundingbox (0,0) rectangle (\linewidth,0pt);
     \fill[cardcolor, rounded corners=2pt]
       (-0.3em,-0.2em) rectangle (\linewidth+0.1em,0.2em);
   \end{tikzpicture}%
-  \vspace{-1.2em}%
-  \makebox[0.45em][l]{\textcolor{themecolor}{\rule[-0.05em]{2pt}{0.95em}}}%
-  \hspace{0.3em}\textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[-0.1em]
-  \hspace*{0.75em}{\small\itshape\color{accentcolor}#3}\par\vspace{-0.15em}
+  \vspace{-0.6em}%
+  \makebox[0pt][l]{\textcolor{themecolor}{\rule[-0.05em]{2pt}{0.95em}}}%
+  \hspace{0.3em}\textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[0.1em]
+  \hspace*{0.75em}{\small\itshape\color{accentcolor}#3}\par\vspace{0em}
   \hspace*{0.75em}\begin{minipage}{\dimexpr\linewidth-0.75em\relax}
     #4
-    \ifthenelse{\equal{#5}{}}{}{\par\vspace{-0.05em}{\footnotesize\color{mutedcolor}#5}}
+    \ifthenelse{\equal{#5}{}}{}{\par\vspace{0em}{\footnotesize\color{mutedcolor}#5}}
   \end{minipage}\par
 }
 
 %% ---------- 开源项目 ----------
 % \openSourceItem{<repo 名>}{<stars>}{<forks>}{<语言>}{<描述>}{<贡献 itemize>}
 \NewDocumentCommand{\openSourceItem}{m m m m m m}{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   {\bfseries\color{themecolor}\faGithub\ #1}\hfill
-  {\footnotesize\color{accentcolor}\faStar\,#2\ \ \faCodeBranch\,#3\ \ \faCode\,#4}\\[-0.1em]
-  {\small\itshape\color{mutedcolor}#5}\par\vspace{-0.2em}
+  {\footnotesize\color{accentcolor}\faStar\,#2\ \ \faCodeBranch\,#3\ \ \faCode\,#4}\\[0.1em]
+  {\small\itshape\color{mutedcolor}#5}\par\vspace{0em}
   #6
 }
 
 %% ---------- 作品集 ----------
 % \workItem[<thumb>]{<标题>}{<类型/平台>}{<链接>}{<描述>}
 \NewDocumentCommand{\workItem}{O{} m m m m}{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   \IfStrEq{#1}{}{%
     {\color{accentcolor}\faPaintBrush}\ %
   }{%
@@ -449,31 +454,32 @@
       \includegraphics[width=1.6em,height=1.6em,keepaspectratio]{#1}%
     \end{minipage}\hspace{0.2em}%
   }%
-  \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[-0.1em]
+  \textbf{#2}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
   \hspace*{1.6em}{\small\color{accentcolor}\faExternalLink*\ \href{#4}{#4}}\quad{\small #5}\par
 }
 
 %% ---------- 论文发表（v3.6: 左侧装饰线）----------
 \newcommand{\publicationItem}[4]{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   \makebox[0.3em][l]{\textcolor{themecolor!30}{\rule[-0.1em]{1.5pt}{1.1em}}}%
   \hspace{0.3em}%
   \begin{minipage}{\dimexpr\linewidth-0.6em\relax}
-    \textbf{#1}\\[-0.15em]
-    {\small #2}\par\vspace{-0.1em}
+    \textbf{#1}\\[0.1em]
+    {\small #2}\par\vspace{0em}
     {\small\color{accentcolor}#3}\quad{\small #4}\par
   \end{minipage}%
 }
 
 %% ---------- 荣誉 / 奖项（v3.6: 左侧装饰线）----------
 \newcommand{\awardItem}[3]{%
-  \par\vspace{0.15em}\noindent
+  \par\vspace{0.2em}\noindent
   \makebox[0.3em][l]{\textcolor{accentcolor!30}{\rule[-0.1em]{1.5pt}{1.1em}}}%
   \hspace{0.3em}%
   \begin{minipage}{\dimexpr\linewidth-0.6em\relax}
-    {\color{accentcolor}\faTrophy}\ \textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[-0.15em]
+    {\color{accentcolor}\faTrophy}\ \textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[0.1em]
     \hspace*{1.1em}{\small #3}\par
   \end{minipage}%
+  \par\noindent
 }
 
 %% ---------- 技能：单行 inline 风格 ----------
@@ -605,7 +611,7 @@
 \newcommand{\sidesection}[2]{%
   \par\vspace{0.6em}\noindent
   {\footnotesize\bfseries\color{themecolor}\MakeUppercase{#1}}%
-  \par\vspace{-0.4em}{\color{themecolor!50}\rule{\linewidth}{0.4pt}}%
+  \par\vspace{-0.2em}{\color{themecolor!50}\rule{\linewidth}{0.4pt}}%
   \par\vspace{0.1em}
 }
 
@@ -619,7 +625,7 @@
 %% ---------- 时间线条目 ----------
 % \timelineEntry{<date>}{<title>}{<subtitle>}{<body>}
 \newcommand{\timelineEntry}[4]{%
-  \par\vspace{0.2em}\noindent
+  \par\vspace{0.3em}\noindent
   \begin{minipage}[t]{4em}\raggedleft
     {\footnotesize\color{mutedcolor}#1}%
   \end{minipage}\hspace{0.4em}%
@@ -627,7 +633,7 @@
   \hspace{0.3em}%
   \begin{minipage}[t]{\dimexpr\linewidth - 5em\relax}
     \textbf{#2}\ifthenelse{\equal{#3}{}}{}{ \textbullet{}\ {\small\itshape\color{accentcolor}#3}}%
-    \par\vspace{-0.15em}{\small #4}%
+    \par\vspace{0em}{\small #4}%
   \end{minipage}\par
 }
 
@@ -636,10 +642,10 @@
 \newcommand{\coverletterheader}[4]{%
   \par\vspace{0.6em}\noindent
   \begin{minipage}[t]{0.5\linewidth}
-    {\large\bfseries\color{themecolor}\rpName}\\[-0.1em]
+    {\large\bfseries\color{themecolor}\rpName}\\[0.1em]
     {\small\color{mutedcolor}%
-      \ifdef{\@email}{\faEnvelope\ \@email\\[-0.1em]}{}%
-      \ifdef{\@phone}{\faPhone\ \@phone\\[-0.1em]}{}%
+      \ifdef{\@email}{\faEnvelope\ \@email\\[0.1em]}{}%
+      \ifdef{\@phone}{\faPhone\ \@phone\\[0.1em]}{}%
       \ifdef{\@location}{\faMapMarker*\ \@location}{}%
     }
   \end{minipage}\hfill
@@ -751,16 +757,16 @@
 %% ---------- 证书条目 ----------
 % \certItem{<证书名>}{<颁发机构>}{<时间>}
 \newcommand{\certItem}[3]{%
-  \par\vspace{0.15em}\noindent
-  {\color{accentcolor}\faCertificate}\ \textbf{#1}\hfill{\small\color{mutedcolor}#3}\\[-0.15em]
+  \par\vspace{0.2em}\noindent
+  {\color{accentcolor}\faCertificate}\ \textbf{#1}\hfill{\small\color{mutedcolor}#3}\\[0.1em]
   \hspace*{1.4em}{\small\color{mutedcolor}#2}\par
 }
 
 %% ---------- 通用简历条目（无图标版）----------
 % \resumeItem{<标题>}{<时间>}{<描述>}
 \newcommand{\resumeItem}[3]{%
-  \par\vspace{0.2em}\noindent
-  \textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[-0.1em]
+  \par\vspace{0.3em}\noindent
+  \textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[0.1em]
   \hspace*{0em}{\small #3}\par
 }
 
