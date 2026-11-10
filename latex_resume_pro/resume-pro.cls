@@ -417,15 +417,20 @@
 % \projectCard{<标题>}{<时间>}{<一句话简介>}{<itemize 详细描述>}{<链接 footer>}
 \newcommand{\projectCard}[5]{%
   \par\Needspace{5\baselineskip}\vspace{0.3em}\noindent
-  %% 微阴影背景
-  \begin{tikzpicture}
-    \useasboundingbox (0,0) rectangle (\linewidth,0pt);
-    \fill[cardcolor, rounded corners=2pt]
-      (-0.3em,-0.2em) rectangle (\linewidth+0.1em,0.2em);
-  \end{tikzpicture}%
-  \vspace{-0.6em}%
-  \makebox[0pt][l]{\textcolor{themecolor}{\rule[-0.05em]{2pt}{0.95em}}}%
-  \hspace{0.3em}\textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[0.1em]
+  \if@rp@monochrome
+    %% ATS / 黑白打印：使用纯文本标题，避免卡片底色遮挡文字。
+  \else
+    %% 彩色模式：微阴影背景 + 左侧主题色装饰。
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\linewidth,0pt);
+      \fill[cardcolor, rounded corners=2pt]
+        (-0.3em,-0.2em) rectangle (\linewidth+0.1em,0.2em);
+    \end{tikzpicture}%
+    \vspace{-0.6em}%
+    \makebox[0pt][l]{\textcolor{themecolor}{\rule[-0.05em]{2pt}{0.95em}}}%
+    \hspace{0.3em}%
+  \fi
+  \textbf{#1}\hfill{\small\color{mutedcolor}#2}\\[0.1em]
   \hspace*{0.75em}{\small\itshape\color{accentcolor}#3}\par\vspace{0em}
   \hspace*{0.75em}\begin{minipage}{\dimexpr\linewidth-0.75em\relax}
     #4
@@ -631,7 +636,7 @@
   \end{minipage}\hspace{0.4em}%
   \makebox[0.4em][l]{\textcolor{themecolor}{\rule[-0.05em]{1.5pt}{0.85em}}}%
   \hspace{0.3em}%
-  \begin{minipage}[t]{\dimexpr\linewidth - 5em\relax}
+  \begin{minipage}[t]{\dimexpr\linewidth - 5.1em\relax}
     \textbf{#2}\ifthenelse{\equal{#3}{}}{}{ \textbullet{}\ {\small\itshape\color{accentcolor}#3}}%
     \par\vspace{0em}{\small #4}%
   \end{minipage}\par
@@ -752,7 +757,7 @@
     alibabaCloudLogo%
   }%
 }
-\newcommand{\clearlogo@one}[1]{\ifdef{#1}{\csdef{#1}{}}{}}
+\newcommand{\clearlogo@one}[1]{\ifcsdef{#1}{\csdef{#1}{}}{}}
 
 %% ---------- 证书条目 ----------
 % \certItem{<证书名>}{<颁发机构>}{<时间>}

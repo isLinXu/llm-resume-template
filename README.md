@@ -96,7 +96,7 @@ cd latex_resume_pro
 make                # 构建主简历 → resume-pro-zh.pdf
 make preview        # 主题预览 → themes-preview.pdf
 make quickstart     # 极简示例 → quickstart.pdf
-make variants       # 构建 9 套变体 → variants/pdf/
+make variants       # 构建 10 套变体 → variants/pdf/
 make all-pdf        # 一次性全部构建
 make watch          # 文件变化自动重编译（依赖 latexmk）
 make lint           # LaTeX 语法检查（chktex）
@@ -128,7 +128,7 @@ docker run --rm -v $(pwd)/latex_resume_pro:/workspace resume-builder
 > |:---|:---|
 > | **编辑模式** | 表单编辑器 + 代码编辑器双模式切换 |
 > | **语法高亮** | LaTeX 语法高亮（命令/环境/注释/花括号分色） |
-> | **变体切换** | 11 种变体一键切换（学术/商务/极简/一页/产品/双栏/英文/紫色/求职信/学术长版/快速入门） |
+> | **变体切换** | 中文主简历 + 10 套变体一键切换（学术/商务/极简/一页/产品/双栏/英文/紫色/求职信/学术长版） |
 > | **主题配置** | 8 套主题色块预览 + 自定义三色 |
 > | **可视化配置** | 语言/紧凑/单色/页脚开关 |
 > | **模块管理** | 6 个模块独立开关切换 |
@@ -142,6 +142,17 @@ docker run --rm -v $(pwd)/latex_resume_pro:/workspace resume-builder
 > | **下载** | ZIP 打包下载 + PDF 直接下载 |
 > | **PDF 预览** | 缩略图侧栏 / 适应宽度 / 全屏模式 / Ctrl+滚轮缩放 / 打印支持 |
 > | **字符统计** | 实时字符数 + 行数显示 |
+
+本地预览与变体注册表维护（从仓库根目录执行）：
+
+```bash
+# 启动在线编辑器预览，支持 --host / --port 参数
+npm run dev -- --host 127.0.0.1 --port 7100
+
+# 从真实 LaTeX 入口重新生成编辑器注册表，并检查是否同步
+python3 latex_resume_pro/scripts/generate_editor_variants.py
+python3 latex_resume_pro/scripts/generate_editor_variants.py --check
+```
 
 ### 5. Overleaf 一键使用
 

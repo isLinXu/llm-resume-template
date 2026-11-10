@@ -31,6 +31,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Generate editor registry from real variants
+        run: python3 latex_resume_pro/scripts/generate_editor_variants.py
+
       - name: Cache TeX build artifacts
         uses: actions/cache@v4
         with:
@@ -63,78 +66,62 @@ jobs:
               fi
               cd ..
               
+              echo "=== Cleaning previous main PDFs ==="
+              rm -f resume-pro-zh.pdf quickstart.pdf themes-preview.pdf
+
               echo "=== Building main resume ==="
-              xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -5
-              xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error resume-pro-zh.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error resume-pro-zh.tex 2>&1 | tail -5
               
               echo "=== Building quickstart ==="
-              xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -5
-              xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error quickstart.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error quickstart.tex 2>&1 | tail -5
               
               echo "=== Building themes preview ==="
-              xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -5
-              xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error themes-preview.tex 2>&1 | tail -5
+              xelatex -interaction=nonstopmode -halt-on-error -file-line-error themes-preview.tex 2>&1 | tail -5
               
               echo "=== Building variants ==="
-              bash variants/build_variants.sh 2>&1 | tail -10 || true
+              bash variants/build_variants.sh 2>&1 | tail -10
               
               echo "=== Build complete ==="
-              ls -lh *.pdf 2>/dev/null || echo "No PDFs in root"
-              ls -lh variants/pdf/*.pdf 2>/dev/null || echo "No variant PDFs"
+              ls -lh *.pdf
+              ls -lh variants/pdf/*.pdf
             '
 
       - name: Verify builds
         run: |
+          set -euo pipefail
           echo "=== Verifying PDF builds ==="
+          EXPECTED=(
+            latex_resume_pro/resume-pro-zh.pdf
+            latex_resume_pro/quickstart.pdf
+            latex_resume_pro/themes-preview.pdf
+            latex_resume_pro/variants/pdf/variant-academic.pdf
+            latex_resume_pro/variants/pdf/variant-academic-long.pdf
+            latex_resume_pro/variants/pdf/variant-product.pdf
+            latex_resume_pro/variants/pdf/variant-blackpro.pdf
+            latex_resume_pro/variants/pdf/variant-minimalist.pdf
+            latex_resume_pro/variants/pdf/variant-onepage.pdf
+            latex_resume_pro/variants/pdf/variant-english.pdf
+            latex_resume_pro/variants/pdf/variant-purple.pdf
+            latex_resume_pro/variants/pdf/variant-twocolumn.pdf
+            latex_resume_pro/variants/pdf/variant-coverletter.pdf
+          )
           ERRORS=0
-          
-          # Check main resume
-          if [ ! -f latex_resume_pro/resume-pro-zh.pdf ]; then
-            echo "❌ ERROR: resume-pro-zh.pdf not found"
-            ERRORS=$((ERRORS+1))
-          else
-            SIZE=$(stat -c%s latex_resume_pro/resume-pro-zh.pdf 2>/dev/null || echo 0)
-            echo "✅ resume-pro-zh.pdf ($SIZE bytes)"
-            if [ "$SIZE" -lt 10000 ]; then
-              echo "⚠️  WARNING: resume-pro-zh.pdf is suspiciously small ($SIZE bytes)"
-            fi
-          fi
-          
-          # Check quickstart
-          if [ ! -f latex_resume_pro/quickstart.pdf ]; then
-            echo "⚠️  WARNING: quickstart.pdf not found (non-critical)"
-          else
-            echo "✅ quickstart.pdf found"
-          fi
-          
-          # Check themes preview
-          if [ ! -f latex_resume_pro/themes-preview.pdf ]; then
-            echo "⚠️  WARNING: themes-preview.pdf not found (non-critical)"
-          else
-            echo "✅ themes-preview.pdf found"
-          fi
-          
-          # Check variant PDFs
-          VARIANT_COUNT=0
-          for f in latex_resume_pro/variant-*.pdf; do
-            if [ -f "$f" ]; then
-              VARIANT_COUNT=$((VARIANT_COUNT+1))
+          for f in "${EXPECTED[@]}"; do
+            if [ -s "$f" ]; then
+              echo "✅ $f ($(stat -c%s "$f") bytes)"
+            else
+              echo "❌ ERROR: $f missing or empty"
+              ERRORS=$((ERRORS+1))
             fi
           done
-          if [ -d latex_resume_pro/variants/pdf ]; then
-            for f in latex_resume_pro/variants/pdf/*.pdf; do
-              if [ -f "$f" ]; then
-                VARIANT_COUNT=$((VARIANT_COUNT+1))
-              fi
-            done
-          fi
-          echo "✅ Found $VARIANT_COUNT variant PDFs"
-          
           if [ "$ERRORS" -gt 0 ]; then
             echo "❌ Build verification failed with $ERRORS errors"
             exit 1
           fi
-          echo "=== All builds verified successfully ==="
+          echo "=== All 13 expected PDFs verified successfully ==="
 
       - name: Assemble site
         run: |

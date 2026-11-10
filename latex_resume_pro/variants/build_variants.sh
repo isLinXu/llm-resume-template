@@ -9,11 +9,16 @@
 #   bash variants/build_variants.sh -j 4    # 并行编译（4 个 job）
 #
 
-set -e
+set -euo pipefail
 cd "$(dirname "$0")/.."
 
 OUT="variants/pdf"
 mkdir -p "$OUT"
+
+# 先清理旧产物，避免编译失败后误用上一次留下的 PDF。
+rm -f "$OUT"/*.pdf "$OUT"/*.aux "$OUT"/*.log "$OUT"/*.out \
+  "$OUT"/*.toc "$OUT"/*.synctex.gz "$OUT"/*.fls \
+  "$OUT"/*.fdb_latexmk "$OUT"/*.xdv "$OUT"/*.compile.log
 
 VARIANTS=(
   "variants/variant-academic.tex"
@@ -42,16 +47,29 @@ build_one() {
   local name
   name=$(basename "$src" .tex)
   echo "==> Building $name ..."
-  xelatex -interaction=nonstopmode -halt-on-error -file-line-error \
-    -output-directory="$OUT" -jobname="$name" "$src" > "$OUT/$name.compile.log" 2>&1 \
-    && xelatex -interaction=nonstopmode -halt-on-error -file-line-error \
-       -output-directory="$OUT" -jobname="$name" "$src" >> "$OUT/$name.compile.log" 2>&1
+
+  if ! xelatex -interaction=nonstopmode -halt-on-error -file-line-error \
+    -output-directory="$OUT" -jobname="$name" "$src" > "$OUT/$name.compile.log" 2>&1; then
+    echo "    ✗ First pass failed: $name (see $OUT/$name.compile.log)" >&2
+    return 1
+  fi
+  if ! xelatex -interaction=nonstopmode -halt-on-error -file-line-error \
+    -output-directory="$OUT" -jobname="$name" "$src" >> "$OUT/$name.compile.log" 2>&1; then
+    echo "    ✗ Second pass failed: $name (see $OUT/$name.compile.log)" >&2
+    return 1
+  fi
+  if [[ ! -s "$OUT/$name.pdf" ]]; then
+    echo "    ✗ Missing or empty PDF: $OUT/$name.pdf" >&2
+    return 1
+  fi
   echo "    ✓ $OUT/$name.pdf"
 }
 
 if [[ "$JOBS" -gt 1 ]]; then
   echo "=== Parallel build with $JOBS jobs ==="
-  # 使用 xargs 实现并行
+  # xargs 启动新的子 shell，必须显式导出变量与函数。
+  export OUT
+  export -f build_one
   printf '%s\n' "${VARIANTS[@]}" | xargs -P "$JOBS" -I {} bash -c 'build_one "$@"' _ {}
 else
   for src in "${VARIANTS[@]}"; do
@@ -59,10 +77,10 @@ else
   done
 fi
 
-# 清理中间文件
+# 仅在全部成功后清理日志；失败时保留 compile.log 便于定位。
 echo "==> Cleaning intermediate files ..."
 ( cd "$OUT" && rm -f *.aux *.log *.out *.toc *.synctex.gz *.fls *.fdb_latexmk *.xdv *.compile.log )
 
 echo ""
 echo "All variants built. PDFs in: $OUT/"
-ls -la "$OUT"/*.pdf 2>/dev/null
+ls -la "$OUT"/*.pdf

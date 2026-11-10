@@ -94,18 +94,7 @@ body{background:var(--bg);display:flex;flex-direction:column;font-family:-apple-
       <option value="quickstart.pdf">⚡ 极简示例</option>
       <option value="themes-preview.pdf">🎨 主题预览</option>
     </optgroup>
-    <optgroup label="变体">
-      <option value="variant-academic.pdf">🎓 学术灰</option>
-      <option value="variant-academic-long.pdf">📚 学术长版</option>
-      <option value="variant-blackpro.pdf">💼 商务黑</option>
-      <option value="variant-product.pdf">🚀 活力橙</option>
-      <option value="variant-minimalist.pdf">✨ 极简单色</option>
-      <option value="variant-onepage.pdf">📋 一页紧凑</option>
-      <option value="variant-english.pdf">🌍 英文版</option>
-      <option value="variant-purple.pdf">💜 专业紫</option>
-      <option value="variant-twocolumn.pdf">📰 双栏</option>
-      <option value="variant-coverletter.pdf">✉️ 求职信</option>
-    </optgroup>
+    <optgroup label="变体" id="variantOptions"></optgroup>
   </select>
   <div class="sep"></div>
   <div class="grp">
@@ -151,6 +140,7 @@ body{background:var(--bg);display:flex;flex-direction:column;font-family:-apple-
 
 <div class="toast-box" id="toastBox"></div>
 
+<script src="variant-sources.js"></script>
 <script type="module">
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
@@ -159,13 +149,14 @@ let doc=null, pg=1, sc=1.5, totalPages=0, url='', thumbsRendered=false;
 const params=new URLSearchParams(location.search);
 const base=params.get('base')||'./pdfs/';
 
-// Determine initial PDF from URL param or default
-const initPdf=params.get('pdf')||'resume-pro-zh.pdf';
-url=base+initPdf;
-
-// Set selector to match
+// 与编辑器共用真实变体注册表，避免预览列表和构建目标漂移。
+const variantOptions=document.getElementById('variantOptions');
+variantOptions.innerHTML=(window.RESUME_VARIANTS||[]).filter(v=>v.id!=='main').map(v=>`<option value="${esc(v.pdf)}">${esc(v.icon)} ${esc(v.name)}</option>`).join('');
 const sel=document.getElementById('sel');
-if([...sel.options].some(o=>o.value===initPdf))sel.value=initPdf;
+const requestedPdf=params.get('pdf')||'resume-pro-zh.pdf';
+const initPdf=[...sel.options].some(o=>o.value===requestedPdf)?requestedPdf:'resume-pro-zh.pdf';
+sel.value=initPdf;
+url=base+initPdf;
 
 async function load(u){
   const ld=document.getElementById('ld'),cv=document.getElementById('cv');

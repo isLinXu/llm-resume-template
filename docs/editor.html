@@ -212,12 +212,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 }
 
 @media(max-width:600px){
-  .hdr{padding:0 8px;gap:4px;height:44px}
-  .hdr-logo{font-size:12px}
+  .hdr{padding:0 6px;gap:4px;height:52px;overflow:hidden}
+  .hdr-logo{font-size:12px;flex-shrink:0}
   .hdr-logo .em{font-size:14px}
   .hdr-center{display:none}
-  .hdr-acts{gap:2px}
-  .abtn{padding:3px 5px;font-size:9px}
+  .hdr-acts{gap:2px;flex:0 0 auto;min-width:0;margin-left:auto;overflow:visible}
+  .hdr-acts .abtn{padding:3px 6px;font-size:10px;min-height:44px;min-width:40px;justify-content:center;flex-shrink:0}
+  .hdr-acts .sep,.hdr-acts>span{display:none}
+  .hdr-acts button[onclick="togPv()"],
+  .hdr-acts button[onclick="toggleSearch()"],
+  .hdr-acts button[onclick="undo()"],
+  .hdr-acts button[onclick="redo()"],
+  .hdr-acts button[onclick="dlSource()"],
+  .hdr-acts button[onclick="dlZip()"],
+  .hdr-acts button[onclick="importConfig()"],
+  .hdr-acts button[onclick="exportConfig()"],
+  .hdr-acts button[onclick="showGH()"]{display:none}
+  .ed-area{min-width:0}
   .ed-status{font-size:9px;padding:2px 6px}
   .modal{width:95%;margin:10px}
   .modal-body{padding:12px}
@@ -225,6 +236,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
   .search-bar input{font-size:11px;padding:3px 6px}
   .form-row{flex-direction:column}
   .form-row .fld{width:100%}
+  .form-item .del{opacity:1;min-width:44px;min-height:44px}
+  .toast-box{left:14px;right:14px}
+  .toast{max-width:100%}
 }
 
 /* Reduced motion */
@@ -272,7 +286,7 @@ button:focus:not(:focus-visible){outline:none}
       <div class="sep" aria-hidden="true"></div>
       <button class="abtn pri" onclick="build()" aria-label="构建并部署">🚀 构建</button>
       <button class="abtn" onclick="showGH()" aria-label="GitHub 设置">⚙</button>
-      <span style="font-size:9px;color:var(--text3);margin-left:4px" aria-label="版本号">v3.9.0</span>
+      <span style="font-size:9px;color:var(--text3);margin-left:4px" aria-label="版本号">v4.0.0</span>
     </div>
   </header>
 
@@ -480,6 +494,7 @@ button:focus:not(:focus-visible){outline:none}
   <button class="abtn" onclick="document.getElementById('swBanner').style.display='none'" style="font-size:12px">稍后</button>
 </div>
 
+<script src="variant-sources.js"></script>
 <script>
 // ===== DATA =====
 const THEMES=[
@@ -492,19 +507,9 @@ const THEMES=[
   {id:'crimson',name:'深红',c:'#9F1239',s:'法律/文史'},
   {id:'ocean',name:'海洋青',c:'#0E7490',s:'教育/培训'},
 ];
-const VARIANTS=[
-  {id:'main',name:'中文主简历',icon:'📄',theme:'techblue',opts:'zh',desc:'默认完整版'},
-  {id:'academic',name:'学术灰',icon:'🎓',theme:'academicgray',opts:'zh',desc:'科研/申博'},
-  {id:'academic-long',name:'学术长版',icon:'📚',theme:'academicgray',opts:'zh',desc:'3+页 CV'},
-  {id:'blackpro',name:'商务黑',icon:'💼',theme:'businessblack',opts:'zh',desc:'管理/金融'},
-  {id:'product',name:'活力橙',icon:'🚀',theme:'energyorange',opts:'zh,compact',desc:'产品/创业'},
-  {id:'minimalist',name:'极简单色',icon:'✨',theme:'techblue',opts:'zh,compact,monochrome',desc:'ATS/打印'},
-  {id:'onepage',name:'一页紧凑',icon:'📋',theme:'techblue',opts:'zh,compact,nofooter',desc:'校招首选'},
-  {id:'english',name:'英文版',icon:'🌍',theme:'techblue',opts:'en',desc:'海外/外企'},
-  {id:'purple',name:'专业紫',icon:'💜',theme:'professionalpurple',opts:'zh',desc:'创意/媒体'},
-  {id:'twocolumn',name:'双栏',icon:'📰',theme:'ocean',opts:'zh,nofooter',desc:'快速浏览'},
-  {id:'coverletter',name:'求职信',icon:'✉️',theme:'techblue',opts:'zh,nofooter',desc:'配套信件'},
-];
+// 唯一数据源：由真实 LaTeX entry 文件自动生成，包含构建路径和 PDF 文件名。
+const VARIANTS=window.RESUME_VARIANTS||[];
+if(!VARIANTS.length)throw new Error('变体注册表未加载，请重新生成 variant-sources.js');
 const MODULES=[
   {id:'header',name:'头部+摘要',icon:'👤',file:'modules/header.tex',on:true},
   {id:'skills',name:'专业技能',icon:'💻',file:'modules/skills.tex',on:true},
@@ -731,6 +736,12 @@ let searchMatches=[],searchIdx=-1;
 // ===== INIT =====
 function init(){
   loadLS();
+  if(!VARIANTS.some(v=>v.id===S.variant))S.variant='main';
+  const opts=getVariant().opts.split(',');
+  document.getElementById('cfgLang').value=opts.includes('en')?'en':'zh';
+  document.getElementById('cfgCompact').value=opts.includes('compact')?'compact':'';
+  document.getElementById('cfgMono').value=opts.includes('monochrome')?'monochrome':'';
+  document.getElementById('cfgFooter').value=opts.includes('nofooter')?'nofooter':'';
   renderThemes();
   renderModules();
   renderVariants();
@@ -738,6 +749,8 @@ function init(){
   syncFormFromConfig();
   histPush();
   setupResizer();
+  setMode(S.editMode);
+  refreshPv();
 }
 
 function loadLS(){
@@ -791,23 +804,26 @@ function applyCustom(){
 }
 
 // ===== VARIANTS =====
+function getVariant(){return VARIANTS.find(v=>v.id===S.variant)||VARIANTS[0]}
 function renderVariants(){
-  document.getElementById('vlist').innerHTML=VARIANTS.map(v=>`<button class="vbtn ${v.id===S.variant?'on':''}" onclick="setVariant('${v.id}')"><span class="vi">${v.icon}</span><span class="vn">${v.name}</span><span class="vs">${v.desc}</span></button>`).join('');
+  const current=getVariant();
+  const meta=`<div style="padding:6px 8px 10px;margin-bottom:4px;border-bottom:1px solid var(--border);font-size:10px;line-height:1.6;color:var(--text3)"><strong style="color:var(--green)">真实源码</strong> · ${esc(current.entry)}<br>构建目标：${esc(current.path)}<br>输出：pdfs/${esc(current.pdf)}<br>独立版式保留原有内容预算；模块开关仅影响实际引用的共享模块。</div>`;
+  document.getElementById('vlist').innerHTML=meta+VARIANTS.map(v=>`<button class="vbtn ${v.id===S.variant?'on':''}" onclick="setVariant('${v.id}')" title="${esc(v.path)} → ${esc(v.pdf)}"><span class="vi">${v.icon}</span><span class="vn">${v.name}</span><span class="vs">${v.desc}</span></button>`).join('');
 }
 function setVariant(id){
-  S.variant=id;
   const v=VARIANTS.find(x=>x.id===id);
-  if(v){
-    const opts=v.opts.split(',');
-    document.getElementById('cfgLang').value=opts.includes('en')?'en':'zh';
-    document.getElementById('cfgCompact').value=opts.includes('compact')?'compact':'';
-    document.getElementById('cfgMono').value=opts.includes('monochrome')?'monochrome':'';
-    document.getElementById('cfgFooter').value=opts.includes('nofooter')?'nofooter':'';
-    if(v.theme&&v.theme!==S.theme)setTheme(v.theme);
-    syncCfg();
-  }
-  renderVariants();saveLS();histPush();
-  toast('i',`变体 → ${v?.name}`);
+  if(!v){toast('e','未知变体');return}
+  S.files[S.curFile]=document.getElementById('editor').value;
+  S.variant=id;
+  const opts=v.opts.split(',');
+  document.getElementById('cfgLang').value=opts.includes('en')?'en':'zh';
+  document.getElementById('cfgCompact').value=opts.includes('compact')?'compact':'';
+  document.getElementById('cfgMono').value=opts.includes('monochrome')?'monochrome':'';
+  document.getElementById('cfgFooter').value=opts.includes('nofooter')?'nofooter':'';
+  if(v.theme&&v.theme!==S.theme)setTheme(v.theme);
+  syncCfg();
+  renderVariants();saveLS();histPush();refreshPv();
+  toast('s',`变体 → ${v.name} · ${v.pdf}`);
 }
 
 // ===== MODULES =====
@@ -1547,41 +1563,47 @@ function togSide(){document.getElementById('side').classList.toggle('off')}
 function togPv(){document.getElementById('pvArea').classList.toggle('off')}
 function togSec(el){el.classList.toggle('shut');el.nextElementSibling.classList.toggle('off')}
 
+function previewUrl(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const root=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}/`:'';
+  return `${root}preview.html?pdf=${encodeURIComponent(getVariant().pdf)}`;
+}
+function pdfUrl(){
+  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const root=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}/`:'';
+  return `${root}pdfs/${getVariant().pdf}`;
+}
 function refreshPv(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
-  const base=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}`:'';
-  if(base){
-    document.getElementById('pvBody').innerHTML=`<iframe src="${base}/preview.html" style="width:100%;height:100%;border:none"></iframe>`;
-    toast('i','正在加载 PDF 预览...');
-  }else{
-    document.getElementById('pvBody').innerHTML=`<iframe src="preview.html" style="width:100%;height:100%;border:none"></iframe>`;
-  }
+  const v=getVariant();
+  document.getElementById('pvBody').innerHTML=`<iframe src="${esc(previewUrl())}" title="${esc(v.name)} PDF 预览" style="width:100%;height:100%;border:none"></iframe>`;
+  toast('i',`正在加载 ${v.name} PDF...`);
 }
-function fullPv(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
-  const base=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}`:'';
-  window.open(base?`${base}/preview.html`:'preview.html','_blank');
-}
+function fullPv(){window.open(previewUrl(),'_blank','noopener')}
 
 // ===== GITHUB =====
 function showGH(){document.getElementById('ghModal').classList.add('show')}
 function closeM(id){document.getElementById(id).classList.remove('show')}
 function saveGH(){
   localStorage.setItem('rp-gh',JSON.stringify({token:document.getElementById('ghToken').value,owner:document.getElementById('ghOwner').value,repo:document.getElementById('ghRepo').value,branch:document.getElementById('ghBranch').value}));
-  closeM('ghModal');toast('s','GitHub 配置已保存');
+  closeM('ghModal');renderVariants();toast('s','GitHub 配置已保存');
+}
+
+function getSourceFiles(){
+  const v=getVariant();
+  const files={[v.path]:genMainTex()};
+  const fileMap={'config.tex':'latex_resume_pro/config.tex','header.tex':'latex_resume_pro/modules/header.tex','skills.tex':'latex_resume_pro/modules/skills.tex','education.tex':'latex_resume_pro/modules/education.tex','experience.tex':'latex_resume_pro/modules/experience.tex','projects.tex':'latex_resume_pro/modules/projects.tex','publications.tex':'latex_resume_pro/modules/publications.tex','summary.tex':'latex_resume_pro/modules/summary.tex'};
+  for(const[local,repo]of Object.entries(fileMap)){if(S.files[local])files[repo]=S.files[local]}
+  return files;
 }
 
 async function build(){
   const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
   if(!gh.token||!gh.owner){showGH();toast('i','请先配置 GitHub Token');return}
   S.files[S.curFile]=document.getElementById('editor').value;saveLS();
-  toast('i','正在提交到 GitHub...');
+  const v=getVariant();
+  toast('i',`正在提交 ${v.name} 到 ${v.path}...`);
   try{
-    const fileMap={'config.tex':'latex_resume_pro/config.tex','header.tex':'latex_resume_pro/modules/header.tex','skills.tex':'latex_resume_pro/modules/skills.tex','education.tex':'latex_resume_pro/modules/education.tex','experience.tex':'latex_resume_pro/modules/experience.tex','projects.tex':'latex_resume_pro/modules/projects.tex','publications.tex':'latex_resume_pro/modules/publications.tex'};
-    const activeMods=MODULES.filter(m=>m.on);
-    const mainTex=genMainTex(activeMods);
-    const filesToCommit={'latex_resume_pro/resume-pro-zh.tex':mainTex};
-    for(const[local,repo]of Object.entries(fileMap)){if(S.files[local])filesToCommit[repo]=S.files[local]}
+    const filesToCommit=getSourceFiles();
     const hdr={'Authorization':`token ${gh.token}`,'Accept':'application/vnd.github.v3+json'};
     const refR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/ref/heads/${gh.branch}`,{headers:hdr});
     if(!refR.ok)throw new Error(`获取分支引用失败: ${refR.status} ${await refR.text()}`);
@@ -1598,99 +1620,127 @@ async function build(){
     const trR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/trees`,{method:'POST',headers:hdr,body:JSON.stringify({base_tree:commitD.tree.sha,tree:treeItems})});
     if(!trR.ok)throw new Error(`创建 tree 失败: ${trR.status}`);
     const trD=await trR.json();
-    const ncR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/commits`,{method:'POST',headers:hdr,body:JSON.stringify({message:'docs: update resume via online editor',tree:trD.sha,parent:baseSha})});
+    const ncR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/commits`,{method:'POST',headers:hdr,body:JSON.stringify({message:`docs: update ${v.id} via online editor`,tree:trD.sha,parent:baseSha})});
     if(!ncR.ok)throw new Error(`创建 commit 失败: ${ncR.status}`);
     const ncD=await ncR.json();
     const pushR=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/git/refs/heads/${gh.branch}`,{method:'PATCH',headers:hdr,body:JSON.stringify({sha:ncD.sha})});
     if(!pushR.ok)throw new Error(`推送失败: ${pushR.status}`);
-    toast('s','已提交！CI 将自动构建 PDF');
-    setTimeout(()=>checkBuild(gh),5000);
+    toast('s',`已提交 ${v.name}！CI 将构建 ${v.pdf}`);
+    setTimeout(()=>checkBuild(gh,ncD.sha),5000);
   }catch(e){console.error(e);toast('e',`提交失败: ${e.message}`)}
 }
 
-async function checkBuild(gh){
-  try{
-    let attempts=0;const maxAttempts=6;
-    const poll=async()=>{
-      const r=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/actions/runs?per_page=1`,{headers:{'Authorization':`token ${gh.token}`,'Accept':'application/vnd.github.v3+json'}});
+async function checkBuild(gh,sha){
+  let attempts=0;const maxAttempts=12;
+  const poll=async()=>{
+    try{
+      const r=await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/actions/workflows/build.yml/runs?event=push&per_page=10`,{headers:{'Authorization':`token ${gh.token}`,'Accept':'application/vnd.github.v3+json'}});
+      if(!r.ok)throw new Error(`查询 CI 失败: ${r.status}`);
       const d=await r.json();
-      const run=d.workflow_runs?.[0];
-      if(run){
-        if(run.status==='completed'){
-          toast(run.conclusion==='success'?'s':'e',`CI: ${run.conclusion==='success'?'构建成功':'构建失败'}`);
-          return;
-        }
-        attempts++;
-        if(attempts<maxAttempts){
-          toast('i',`CI: ${run.status}... (${attempts}/${maxAttempts})`);
-          setTimeout(poll,10000);
-        }else{
-          toast('i','CI 仍在运行，请稍后查看');
-        }
+      const run=d.workflow_runs?.find(item=>item.head_sha===sha);
+      if(run?.status==='completed'){
+        const ok=run.conclusion==='success';
+        toast(ok?'s':'e',`CI: ${ok?'构建成功':'构建失败'} · ${getVariant().pdf}`);
+        if(ok)refreshPv();
+        return;
       }
-    };
-    poll();
-  }catch(e){}
+      attempts++;
+      if(attempts<maxAttempts){
+        toast('i',`CI: ${run?.status||'等待工作流'}... (${attempts}/${maxAttempts})`);
+        setTimeout(poll,10000);
+      }else toast('i','CI 仍在运行，请稍后查看');
+    }catch(e){console.error(e);toast('e',e.message)}
+  };
+  poll();
 }
 
-function genMainTex(mods){
+function genMainTex(){
+  const v=getVariant();
+  let source=v.source;
   const lang=document.getElementById('cfgLang')?.value||'zh';
-  return `\\documentclass[${lang}]{resume-pro}
+  const compact=document.getElementById('cfgCompact')?.value;
+  const mono=document.getElementById('cfgMono')?.value;
+  const footer=document.getElementById('cfgFooter')?.value;
+  const opts=[lang,compact,mono,footer].filter(Boolean).join(',');
+  source=source.replace(/\\documentclass\[[^]]*\]\{resume-pro\}/,`\\documentclass[${opts}]{resume-pro}`);
 
-\\input{config.tex}
+  if(S.theme==='custom'){
+    const p=document.getElementById('cp1').value.replace('#','');
+    const s=document.getElementById('cp2').value.replace('#','');
+    const l=document.getElementById('cp3').value.replace('#','');
+    source=source.replace(/^\\settheme\{[^}]+\}/gm,`\\customtheme{${p}}{${s}}{${l}}`);
+  }else source=source.replace(/^\\settheme\{[^}]+\}/gm,`\\settheme{${S.theme}}`);
 
-\\begin{document}
+  // 只切换 entry 中实际存在的共享模块，不向一页/极简等独立版式注入额外内容。
+  for(const m of MODULES){
+    const escaped=m.file.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re=new RegExp(`^[\\t ]*%?[\\t ]*\\\\input\\{${escaped}\\}[\\t ]*$`,'gm');
+    source=source.replace(re,line=>{
+      const commented=line.trimStart().startsWith('%');
+      if(!m.on)return commented?line:line.replace(/^([\t ]*)/,'$1% ');
+      if(m.id==='summary'&&commented)return line.replace(/^([\t ]*)%[\t ]*/,'$1');
+      return line;
+    });
+  }
 
-${mods.map(m=>`\\input{${m.file}}`).join('\n\n')}
+  // 英文默认字段保持原样；用户明确修改过的个人字段才覆写英文 entry。
+  if(v.id==='english'){
+    for(const key of ['name','tagline','keywords','location']){
+      const re=new RegExp(`\\\\${key}\\{([^}]*)\\}`);
+      const current=S.files['config.tex'].match(re)?.[1];
+      const initial=DF['config.tex'].match(re)?.[1];
+      if(current!==undefined&&current!==initial)source=source.replace(new RegExp(`^\\\\${key}\\{[^}]*\\}`,'m'),`\\${key}{${current}}`);
+    }
+  }
 
-\\end{document}`;
+  // 双栏联系方式位于独立 entry 中，同步 config 里的对应字段。
+  if(v.id==='twocolumn'){
+    const cv=key=>S.files['config.tex'].match(new RegExp(`\\\\${key}\\{([^}]*)\\}`))?.[1]||'';
+    const github=cv('github').replace(/^https?:\/\/github\.com\//,'');
+    const linkedin=cv('linkedin').replace(/^https?:\/\/linkedin\.com\/in\//,'');
+    source=source.replace(/(\\faPhone\\ \\,)[^\\\n]*/,()=>`\\faPhone\\ \\,${cv('phone')}`);
+    source=source.replace(/\\faEnvelope\\ \\,\\href\{mailto:[^}]+\}\{[^}]+\}/,()=>`\\faEnvelope\\ \\,\\href{mailto:${cv('email')}}{${cv('email')}}`);
+    source=source.replace(/(\\faMapMarker\*\\ \\,)[^\\\n]*/,()=>`\\faMapMarker*\\ \\,${cv('location')}`);
+    source=source.replace(/\\faGithub\\ \\,\\href\{https:\/\/github\.com\/[^}]+\}\{[^}]+\}/,()=>`\\faGithub\\ \\,\\href{https://github.com/${github}}{github.com/${github}}`);
+    source=source.replace(/\\faLinkedin\\ \\,\\href\{https:\/\/linkedin\.com\/in\/[^}]+\}\{[^}]+\}/,()=>`\\faLinkedin\\ \\,\\href{https://linkedin.com/in/${linkedin}}{linkedin.com/in/${linkedin}}`);
+    source=source.replace(/\\faGlobe\\ \\,\\href\{https:\/\/hertz\.dev\}\{[^}]+\}/,()=>`\\faGlobe\\ \\,\\href{${cv('website')}}{${cv('website').replace(/^https?:\/\//,'')}}`);
+  }
+  return source;
 }
 
 // ===== DOWNLOAD =====
+function saveBlob(blob,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 function dlSource(){
   S.files[S.curFile]=document.getElementById('editor').value;
-  const activeMods=MODULES.filter(m=>m.on);
-  const mainTex=genMainTex(activeMods);
-  let combined='';
-  for(const[name,content]of Object.entries({['resume-pro-zh.tex']:mainTex,...S.files})){combined+=`% ========== ${name} ==========\n${content}\n\n`}
-  const blob=new Blob([combined],{type:'text/plain'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-source.tex';a.click();
-  toast('s','源码已下载');
+  const v=getVariant();let combined='';
+  for(const[name,content]of Object.entries(getSourceFiles()))combined+=`% ========== ${name} ==========\n${content}\n\n`;
+  saveBlob(new Blob([combined],{type:'text/plain'}),`resume-pro-${v.id}-source.tex`);
+  toast('s',`${v.name}源码已下载 · ${v.entry}`);
 }
 
 function dlZip(){
   S.files[S.curFile]=document.getElementById('editor').value;
-  const activeMods=MODULES.filter(m=>m.on);
-  const mainTex=genMainTex(activeMods);
-  // Use JSZip if available, otherwise fallback to concatenated download
+  const v=getVariant(),files=getSourceFiles();
   if(window.JSZip){
     const zip=new JSZip();
-    zip.file('resume-pro-zh.tex',mainTex);
-    for(const[name,content]of Object.entries(S.files)){
-      zip.file(name,content);
-    }
+    for(const[name,content]of Object.entries(files))zip.file(name,content);
+    zip.file('variant.json',JSON.stringify({id:v.id,name:v.name,entry:v.path,pdf:v.pdf,content:v.content},null,2));
     zip.generateAsync({type:'blob'}).then(blob=>{
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-package.zip';a.click();
-      toast('s','ZIP 包已下载');
-    });
+      saveBlob(blob,`resume-pro-${v.id}.zip`);
+      toast('s',`${v.name}源码包已下载`);
+    }).catch(e=>toast('e',`ZIP 生成失败: ${e.message}`));
   }else{
-    // Fallback: concatenated .tex download
-    let combined='%% Resume Pro — Full Source Package\n%% ================================\n\n';
-    combined+=`%% === resume-pro-zh.tex ===\n${mainTex}\n\n`;
-    for(const[name,content]of Object.entries(S.files)){
-      combined+=`%% === ${name} ===\n${content}\n\n`;
-    }
-    const blob=new Blob([combined],{type:'text/plain'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resume-pro-package.tex';a.click();
-    toast('s','源码已下载（安装 JSZip 可获得 ZIP 格式）');
+    let combined='%% Resume Pro — Variant Source Package\n%% ================================\n\n';
+    for(const[name,content]of Object.entries(files))combined+=`%% === ${name} ===\n${content}\n\n`;
+    saveBlob(new Blob([combined],{type:'text/plain'}),`resume-pro-${v.id}.tex`);
+    toast('s','源码已下载（JSZip 不可用时使用合并格式）');
   }
 }
 
-function dlPDF(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
-  if(gh.owner&&gh.repo){window.open(`https://${gh.owner}.github.io/${gh.repo}/pdfs/resume-pro-zh.pdf`,'_blank')}
-  else{toast('i','请先配置 GitHub 信息以获取在线 PDF；或使用本地 LaTeX 编译');dlSource()}
-}
+function dlPDF(){window.open(pdfUrl(),'_blank','noopener')}
 
 // ===== FORMAT =====
 function fmtCode(){

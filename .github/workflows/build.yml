@@ -3,6 +3,7 @@ name: Build Resume PDFs
 on:
   push:
     branches: [main, master]
+    tags: ['v*']
     paths:
       - 'latex_resume_pro/**'
       - '.github/workflows/build.yml'
@@ -64,52 +65,77 @@ jobs:
 
       - name: Build main resume
         run: |
+          set -euo pipefail
           cd latex_resume_pro
-          xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -3
-          xelatex -interaction=nonstopmode -halt-on-error resume-pro-zh.tex 2>&1 | tail -3
+          rm -f resume-pro-zh.pdf
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error resume-pro-zh.tex
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error resume-pro-zh.tex
 
       - name: Build quickstart example
         run: |
+          set -euo pipefail
           cd latex_resume_pro
-          xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -3
-          xelatex -interaction=nonstopmode -halt-on-error quickstart.tex 2>&1 | tail -3
+          rm -f quickstart.pdf
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error quickstart.tex
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error quickstart.tex
 
       - name: Build themes preview
         run: |
+          set -euo pipefail
           cd latex_resume_pro
-          xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -3
-          xelatex -interaction=nonstopmode -halt-on-error themes-preview.tex 2>&1 | tail -3
+          rm -f themes-preview.pdf
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error themes-preview.tex
+          xelatex -interaction=nonstopmode -halt-on-error -file-line-error themes-preview.tex
 
       - name: Build all variants
         run: |
+          set -euo pipefail
           cd latex_resume_pro
-          bash variants/build_variants.sh 2>&1 | tail -10 || true
+          bash variants/build_variants.sh
 
       - name: Verify builds
         run: |
-          cd latex_resume_pro
-          echo "## Build Verification" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          MISSING=0
-          for f in resume-pro-zh.pdf quickstart.pdf themes-preview.pdf; do
-            if [ -f "$f" ]; then
-              echo "✅ $f ($(du -h "$f" | cut -f1))" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "❌ $f — MISSING" >> $GITHUB_STEP_SUMMARY
-              MISSING=1
-            fi
-          done
-          if [ -d variants/pdf ]; then
-            for f in variants/pdf/*.pdf; do
-              if [ -f "$f" ]; then
-                echo "✅ $(basename "$f") ($(du -h "$f" | cut -f1))" >> $GITHUB_STEP_SUMMARY
-              fi
-            done
-          fi
-          if [ "$MISSING" -eq 1 ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "⚠️ Some PDFs failed to build. Check logs above." >> $GITHUB_STEP_SUMMARY
-          fi
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          root = Path("latex_resume_pro")
+          expected = (
+              "resume-pro-zh.pdf",
+              "quickstart.pdf",
+              "themes-preview.pdf",
+              "variants/pdf/variant-academic.pdf",
+              "variants/pdf/variant-academic-long.pdf",
+              "variants/pdf/variant-product.pdf",
+              "variants/pdf/variant-blackpro.pdf",
+              "variants/pdf/variant-minimalist.pdf",
+              "variants/pdf/variant-onepage.pdf",
+              "variants/pdf/variant-english.pdf",
+              "variants/pdf/variant-purple.pdf",
+              "variants/pdf/variant-twocolumn.pdf",
+              "variants/pdf/variant-coverletter.pdf",
+          )
+          lines = ["## Build Verification", ""]
+          missing = []
+          for name in expected:
+              path = root / name
+              if path.is_file() and path.stat().st_size > 0:
+                  line = f"✅ {name} ({path.stat().st_size} bytes)"
+              else:
+                  line = f"❌ {name} — MISSING OR EMPTY"
+                  missing.append(name)
+              print(line)
+              lines.append(line)
+          lines.append("")
+          if missing:
+              lines.append(f"❌ {len(missing)} expected PDFs are missing or empty: {', '.join(missing)}")
+          else:
+              lines.append("✅ All 13 expected PDFs are present and non-empty.")
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as summary:
+              summary.write("\n".join(lines) + "\n")
+          if missing:
+              raise SystemExit(1)
+          PY
 
       - name: Collect PDFs
         run: |

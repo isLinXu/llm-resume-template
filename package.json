@@ -1,0 +1,9 @@
+{
+  "name": "llm-resume-template-site",
+  "private": true,
+  "version": "4.0.0",
+  "description": "Local preview for the Resume Pro static documentation and editor",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs"
+  }
+}

@@ -1,7 +1,7 @@
-# resume-pro · 9 套变体（variants）
+# resume-pro · 10 套变体（variants）
 
 > 通过对 `resume-pro.cls` 的不同主题 / 形状 / 模式 / 章节顺序组合，生成针对不同岗位场景的简历变体。
-> 所有变体共享 `../config.tex` 与 `../modules/*.tex`，**只覆写主题、形状、章节顺序**。
+> 常规变体共享 `../config.tex` 与 `../modules/*.tex`；极简、一页、双栏、求职信等独立版式保留各自的完整内容与结构。
 
 ## 变体一览
 
@@ -11,12 +11,23 @@
 | `variant-academic-long.tex` | academicgray | rounded | (default) | 研究兴趣+学术服务+教学+交流 | 教职 / 博后 / 长版学术 CV |
 | `variant-product.tex` | energyorange | circular | `compact` | 经历先于教育 | 产品 / 创业 / 设计 |
 | `variant-blackpro.tex` | businessblack | square | (default) | 经历最前 | 管理 / 咨询 / 金融 |
-| `variant-minimalist.tex` | (mono) | (无) | `compact + monochrome` | 略去 projects | ATS / 黑白打印 |
+| `variant-minimalist.tex` | (mono) | (无) | `compact + monochrome + nofooter` | 精选项目，严格控制一页 | ATS / 黑白打印 |
 | `variant-onepage.tex` | techblue | circular | `compact + nofooter` | 精选核心+代表成果 | 校招 / 应届一页 |
 | `variant-english.tex` | techblue | circular | `en` | 全英文 | 海外申请 / 外企 |
 | `variant-purple.tex` | professionalpurple | square | (default) | 项目/作品集最前 | 艺术 / 媒体 / 创意 |
 | `variant-twocolumn.tex` | ocean | circular | `nofooter` | 双栏 sidebar | 快速浏览 / 求职平台 |
 | `variant-coverletter.tex` | techblue | — | `nofooter` | 求职信三段式 | 配套求职信 |
+
+## 在线编辑器注册表
+
+编辑器与预览器共用 `docs/variant-sources.js`。新增或修改变体入口后，从仓库根目录重新生成并校验：
+
+```bash
+python3 latex_resume_pro/scripts/generate_editor_variants.py
+python3 latex_resume_pro/scripts/generate_editor_variants.py --check
+```
+
+注册表直接读取主简历与上述 10 个真实 `.tex` 文件，包含构建路径、PDF 文件名、主题、Class 选项和完整源码；不要手工编辑生成文件。
 
 ## 一键编译
 
