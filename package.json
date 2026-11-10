@@ -1,9 +1,12 @@
 {
   "name": "llm-resume-template-site",
   "private": true,
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Local preview for the Resume Pro static documentation and editor",
   "scripts": {
-    "dev": "node scripts/dev-server.mjs"
+    "dev": "node scripts/dev-server.mjs",
+    "test": "node --test tests/*.test.mjs && python3 scripts/sync_version.py --check && python3 latex_resume_pro/scripts/test_suite.py",
+    "test:js": "node --test tests/*.test.mjs",
+    "version:check": "python3 scripts/sync_version.py --check"
   }
 }

@@ -1,11 +1,12 @@
-// Resume Pro — Service Worker v4.0.0
-const CACHE_NAME = 'resume-pro-v4.0.0';
+// Resume Pro — Service Worker v4.0.1
+const CACHE_NAME = 'resume-pro-v4.0.1';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './editor.html',
   './preview.html',
   './variant-sources.js',
+  './latex-parser.js',
   './pdfs/',
 ];
 

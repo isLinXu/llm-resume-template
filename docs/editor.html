@@ -202,9 +202,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .snippets-grid button{padding:3px 8px;font-size:10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
 .snippets-grid button:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
 
+.side-backdrop{display:none}
+.pv-close{display:none}
+
 @media(max-width:900px){
-  .side{width:0;border:none;overflow:hidden}
-  .pv-area{display:none}
+  .side{position:fixed;left:0;top:var(--hdr);bottom:0;width:min(84vw,320px);z-index:600;transform:translateX(0);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:16px 0 40px rgba(0,0,0,.35)}
+  .side.off{width:min(84vw,320px);transform:translateX(-105%);border-right:1px solid var(--border);pointer-events:none}
+  .side-backdrop.show{display:block;position:fixed;inset:var(--hdr) 0 0 0;background:rgba(0,0,0,.55);z-index:550}
+  .pv-area{display:flex;position:fixed;inset:var(--hdr) 0 0 0;width:100%;min-width:0;z-index:500}
+  .pv-area.off{display:none}
+  .pv-close{display:inline-flex}
   .resizer{display:none}
   .hdr-acts{gap:3px}
   .abtn{padding:3px 6px;font-size:10px}
@@ -212,14 +219,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 }
 
 @media(max-width:600px){
-  .hdr{padding:0 6px;gap:4px;height:52px;overflow:hidden}
+  .app{--hdr:52px;height:100dvh}
+  .hdr{padding:0 6px;gap:4px;overflow:hidden}
   .hdr-logo{font-size:12px;flex-shrink:0}
   .hdr-logo .em{font-size:14px}
   .hdr-center{display:none}
   .hdr-acts{gap:2px;flex:0 0 auto;min-width:0;margin-left:auto;overflow:visible}
   .hdr-acts .abtn{padding:3px 6px;font-size:10px;min-height:44px;min-width:40px;justify-content:center;flex-shrink:0}
   .hdr-acts .sep,.hdr-acts>span{display:none}
-  .hdr-acts button[onclick="togPv()"],
   .hdr-acts button[onclick="toggleSearch()"],
   .hdr-acts button[onclick="undo()"],
   .hdr-acts button[onclick="redo()"],
@@ -233,7 +240,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
   .modal{width:95%;margin:10px}
   .modal-body{padding:12px}
   .search-bar{padding:4px 8px}
-  .search-bar input{font-size:11px;padding:3px 6px}
+  .search-bar input{font-size:16px;padding:6px 8px}
+  .form-ed input,.form-ed textarea,.form-ed select,.side input,.side select{font-size:16px}
+  .ed-wrap textarea,.ed-highlight{font-size:16px}
   .form-row{flex-direction:column}
   .form-row .fld{width:100%}
   .form-item .del{opacity:1;min-width:44px;min-height:44px}
@@ -270,8 +279,8 @@ button:focus:not(:focus-visible){outline:none}
       </div>
     </div>
     <div class="hdr-acts">
-      <button class="abtn" onclick="togSide()" title="侧栏 (Ctrl+B)" aria-label="切换侧栏">☰</button>
-      <button class="abtn" onclick="togPv()" title="预览 (Ctrl+J)" aria-label="切换预览">👁</button>
+      <button class="abtn" id="sideToggle" onclick="togSide()" title="侧栏 (Ctrl+B)" aria-label="切换侧栏" aria-controls="side" aria-expanded="true">☰</button>
+      <button class="abtn" id="pvToggle" onclick="togPv()" title="预览 (Ctrl+J)" aria-label="切换预览" aria-controls="pvArea" aria-expanded="true">👁</button>
       <div class="sep" aria-hidden="true"></div>
       <button class="abtn" onclick="toggleSearch()" title="搜索 (Ctrl+F)" aria-label="搜索替换">🔍</button>
       <button class="abtn" onclick="undo()" title="撤销 (Ctrl+Z)" aria-label="撤销">↩</button>
@@ -286,7 +295,7 @@ button:focus:not(:focus-visible){outline:none}
       <div class="sep" aria-hidden="true"></div>
       <button class="abtn pri" onclick="build()" aria-label="构建并部署">🚀 构建</button>
       <button class="abtn" onclick="showGH()" aria-label="GitHub 设置">⚙</button>
-      <span style="font-size:9px;color:var(--text3);margin-left:4px" aria-label="版本号">v4.0.0</span>
+      <span style="font-size:9px;color:var(--text3);margin-left:4px" aria-label="版本号">v4.0.1</span>
     </div>
   </header>
 
@@ -362,6 +371,7 @@ button:focus:not(:focus-visible){outline:none}
         </div>
       </div>
     </aside>
+    <div class="side-backdrop" id="sideBackdrop" onclick="closeSide()" aria-hidden="true"></div>
 
     <!-- Editor Area -->
     <div class="ed-area">
@@ -438,8 +448,9 @@ button:focus:not(:focus-visible){outline:none}
       <div class="pv-hdr">
         <span class="title">📄 PDF 预览</span>
         <div style="margin-left:auto;display:flex;gap:4px">
-          <button class="abtn" onclick="refreshPv()">🔄</button>
-          <button class="abtn" onclick="fullPv()">⛶</button>
+          <button class="abtn" onclick="refreshPv()" aria-label="刷新预览">🔄</button>
+          <button class="abtn" onclick="fullPv()" aria-label="新窗口打开预览">⛶</button>
+          <button class="abtn pv-close" onclick="closePv()" aria-label="关闭预览">✕</button>
         </div>
       </div>
       <div class="pv-body" id="pvBody">
@@ -454,14 +465,15 @@ button:focus:not(:focus-visible){outline:none}
   <div class="modal">
     <div class="modal-hdr"><h3>⚙️ GitHub 配置</h3><button class="modal-x" onclick="closeM('ghModal')">✕</button></div>
     <div class="modal-body">
-      <div class="fld"><label>GitHub Token (repo 权限)</label><input type="password" id="ghToken" placeholder="ghp_xxx" style="width:100%"></div>
-      <p style="font-size:10px;color:var(--orange);margin-top:4px">⚠️ Token 将存储在浏览器 localStorage 中（明文）。建议使用 Fine-grained Token 且仅授予必要权限，不用时可清空。</p>
-      <div class="fld"><label>Owner</label><input id="ghOwner" style="width:100%"></div>
-      <div class="fld"><label>Repo</label><input id="ghRepo" value="llm-resume-template" style="width:100%"></div>
-      <div class="fld"><label>Branch</label><input id="ghBranch" value="main" style="width:100%"></div>
-      <p style="font-size:10px;color:var(--text3);margin-top:8px">💡 Token 需要 repo 权限才能提交文件。配置后点击「🚀 构建」即可自动编译。</p>
+      <div class="fld"><label for="ghToken">GitHub Token（Fine-grained）</label><input type="password" id="ghToken" placeholder="github_pat_xxx" autocomplete="off" style="width:100%"></div>
+      <p style="font-size:10px;color:var(--orange);margin-top:4px">默认仅在当前浏览器会话中保存 Token，关闭标签页后清除。请仅授予目标仓库 Contents 读写权限。</p>
+      <label style="display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:11px;color:var(--text2)"><input type="checkbox" id="ghRemember" style="width:auto;margin-top:2px">在此设备上记住 Token（明文存储，不推荐共享设备使用）</label>
+      <div class="fld"><label for="ghOwner">Owner</label><input id="ghOwner" style="width:100%"></div>
+      <div class="fld"><label for="ghRepo">Repo</label><input id="ghRepo" value="llm-resume-template" style="width:100%"></div>
+      <div class="fld"><label for="ghBranch">Branch</label><input id="ghBranch" value="main" style="width:100%"></div>
+      <p style="font-size:10px;color:var(--text3);margin-top:8px">💡 配置后点击「🚀 构建」即可提交源码并自动编译。仓库配置可以长期保存，Token 默认不持久化。</p>
     </div>
-    <div class="modal-foot"><button class="btn btn-g" onclick="closeM('ghModal')">取消</button><button class="btn btn-p" onclick="saveGH()">保存</button></div>
+    <div class="modal-foot"><button class="btn btn-g" onclick="clearGHToken()" style="margin-right:auto">清除 Token</button><button class="btn btn-g" onclick="closeM('ghModal')">取消</button><button class="btn btn-p" onclick="saveGH()">保存</button></div>
   </div>
 </div>
 
@@ -495,6 +507,7 @@ button:focus:not(:focus-visible){outline:none}
 </div>
 
 <script src="variant-sources.js"></script>
+<script src="latex-parser.js"></script>
 <script>
 // ===== DATA =====
 const THEMES=[
@@ -510,6 +523,8 @@ const THEMES=[
 // 唯一数据源：由真实 LaTeX entry 文件自动生成，包含构建路径和 PDF 文件名。
 const VARIANTS=window.RESUME_VARIANTS||[];
 if(!VARIANTS.length)throw new Error('变体注册表未加载，请重新生成 variant-sources.js');
+const LP=window.ResumeLatex;
+if(!LP)throw new Error('LaTeX 解析器未加载，请检查 latex-parser.js');
 const MODULES=[
   {id:'header',name:'头部+摘要',icon:'👤',file:'modules/header.tex',on:true},
   {id:'skills',name:'专业技能',icon:'💻',file:'modules/skills.tex',on:true},
@@ -563,7 +578,7 @@ DF['config.tex']=`%% ===========================================================
 
 %% ---------- 5. 页脚 ----------
 \\fileinfo{\\faCopyright\\ 2025--2026 \\rpName\\ \\textbullet\\ Built with \\LaTeX}
-\\version{v3.8.0 \\textbullet\\ \\today}
+\\version{v4.0.1 \\textbullet\\ \\today}
 
 %% ---------- 6. QR 码（可选）----------
 % \\qrlink{https://hertz.dev}
@@ -644,7 +659,7 @@ DF['projects.tex']=`% modules/projects.tex — 项目 + 开源 + 作品集
   \\item \\textbf{核心方案}：迭代式检索（ReAct 反思）+ 混合检索（向量 + BM25）+ 交叉编码器重排序
   \\item \\textbf{消融}：MS MARCO / NQ 上 迭代 \\textbf{+15\\%} \\textbullet{} 多策略融合 \\textbf{+3\\%} \\textbullet{} 重排序 \\textbf{+2\\%}
 \\end{itemize}
-}{\\faGithub\\ github.com/hertz/self-rag-agent \\quad \\faGlobe\\ rag.hertz.dev}
+}{\\faGithub\\ hertz/self-rag-agent \\quad \\faGlobe\\ rag.hertz.dev}
 
 \\projectCard{分层记忆长程对话 Agent \\textbullet{} \\texttt{HMem-Agent}}{2023.07 -- 2023.12}
 {受人类记忆机制启发，构建工作 / 短期 / 长期三层记忆架构}{%
@@ -652,7 +667,15 @@ DF['projects.tex']=`% modules/projects.tex — 项目 + 开源 + 作品集
   \\item \\textbf{架构}：Working Memory（K 轮原文）+ Short-term（自动摘要）+ Long-term（重要性 + 时间衰减）
   \\item \\textbf{效果}：信息保留率 \\textbf{92\\%}（vs 68\\%），检索 \\textbf{450ms → 150ms}，100+ 轮对话完成率 \\textbf{+28\\%}
 \\end{itemize}
-}{\\faGithub\\ github.com/hertz/hmem-agent}
+}{\\faGithub\\ hertz/hmem-agent}
+
+\\projectCard{LLM 推理加速框架 \\textbullet{} \\texttt{FastInfer}}{2023.03 -- 2023.06}
+{基于 vLLM 二次开发的低延迟推理引擎，支持动态批处理与抢占调度}{%
+\\begin{itemize}
+  \\item PagedAttention 调度优化 + 自定义 CUDA Kernel + KV Cache 复用
+  \\item A100 单卡 LLaMA-7B 吞吐 \\textbf{2400 tokens/s}，相比 baseline 提升 \\textbf{1.8×}
+\\end{itemize}
+}{\\faGithub\\ hertz/fastinfer}
 
 \\sectionTitle{开源贡献}{\\faGithub}
 
@@ -661,7 +684,32 @@ DF['projects.tex']=`% modules/projects.tex — 项目 + 开源 + 作品集
 \\begin{itemize}
   \\item 集成 PPO / DPO / GRPO，覆盖 ALFWorld / WebShop / SciWorld 三基准；处理 30+ Issues，合并 12 PR
 \\end{itemize}
-}`;
+}
+
+\\openSourceItem{huggingface/transformers}{135k}{27k}{Python}
+{HuggingFace 主仓库 \\textbullet{} \\textit{contributor}}{%
+\\begin{itemize}
+  \\item 修复 Trainer.evaluate FSDP OOM（PR \\#28xxx）；为 Qwen2 补充长文本评测脚本
+\\end{itemize}
+}
+
+\\openSourceItem{vllm-project/vllm}{32k}{4.8k}{Python}
+{高性能 LLM 推理引擎 \\textbullet{} \\textit{contributor}}{%
+\\begin{itemize}
+  \\item PagedAttention 调度路径优化，端到端吞吐 \\textbf{+15\\%}；补充 Baichuan / Yi 国产模型支持
+\\end{itemize}
+}
+
+\\sectionTitle{作品集}{\\faPalette}
+
+\\workItem{Hertz \\textbullet{} 个人技术博客}{Hexo \\textbullet{} 累计 100k+ 阅读}{https://blog.hertz.dev}
+{LLM / Agent / RAG 系列原创长文 50+ 篇，多次被「机器之心」「PaperWeekly」转载}
+
+\\workItem{《大模型工程化实战》技术专栏}{掘金 \\textbullet{} 25 篇 \\textbullet{} 1.5 万关注}{https://juejin.cn/user/hertz}
+{推理加速、量化部署、LangChain 实践，单篇最高阅读 8.6 万}
+
+\\workItem{B 站 \\textbullet{} LLM 论文精读频道}{B 站 \\textbullet{} 1.2 万粉丝}{https://space.bilibili.com/hertz}
+{每周精读一篇顶会论文 + 可复现 Notebook，累计播放 50 万+}`;
 
 DF['publications.tex']=`% modules/publications.tex — 论文 + 荣誉
 
@@ -671,18 +719,34 @@ DF['publications.tex']=`% modules/publications.tex — 论文 + 荣誉
 {Hierarchical Knowledge Distillation for Compact Large Language Models}
 {\\textbf{Hertz}, Li Si, Wang Wu}
 {NeurIPS 2024 (CCF-A)}
-{\\href{https://arxiv.org/abs/2410.xxxxx}{\\faFilePdf\\ Paper}\\ \\,\\href{https://github.com/hertz/hkd-llm}{\\faGithub\\ Code}}
+{\\href{https://arxiv.org/abs/2410.xxxxx}{\\faFilePdf\\ Paper}\\ \\,
+ \\href{https://github.com/hertz/hkd-llm}{\\faGithub\\ Code}}
 
 \\publicationItem
 {Self-Reflective Agents: Reinforcement Learning for Long-Horizon Decision Making}
 {\\textbf{Hertz}, Zhao Liu, Chen Wei}
 {NeurIPS 2026 (under review)}
-{\\href{https://arxiv.org/abs/2510.xxxxx}{\\faFilePdf\\ Preprint}\\ \\,\\href{https://github.com/hertz/agent-rl-framework}{\\faGithub\\ Code}}
+{\\href{https://arxiv.org/abs/2510.xxxxx}{\\faFilePdf\\ Preprint}\\ \\,
+ \\href{https://github.com/hertz/agent-rl-framework}{\\faGithub\\ Code}}
+
+\\publicationItem
+{Retrieval-Augmented Generation with Iterative Self-Correction}
+{Li Si, \\textbf{Hertz}, Wang Wu}
+{EMNLP 2024 Findings (CCF-B)}
+{\\href{https://arxiv.org/abs/2406.xxxxx}{\\faFilePdf\\ Paper}}
+
+\\vspace{0.2em}
+
+\\awardItem{发明专利 \\textbullet{} 一种基于层级蒸馏的大模型压缩方法}{2024.05}{专利号 CN202410xxxxx.X \\textbullet{} 第一发明人}
+\\awardItem{发明专利 \\textbullet{} 一种支持自我反思的智能 Agent 决策方法}{2024.11}{专利号 CN202411xxxxx.X \\textbullet{} 第一发明人}
 
 \\sectionTitle{荣誉与竞赛}{\\faTrophy}
 
 \\awardItem{Kaggle LLM Science Exam \\textbullet{} 金牌}{2023.08}{Top 1\\%（128/2664），方案被 Kaggle 官方教程引用}
+\\awardItem{阿里云天池 LLM Fine-tuning Challenge \\textbullet{} 全国冠军}{2023.05}{72 支团队，奖金 5 万；侧重小样本对齐与提示工程}
 \\awardItem{清华大学 国家奖学金 / 学业优秀奖学金（一等）}{2023 / 2024}{综合排名前 5\\%，连续两年}
+\\awardItem{中国大学生程序设计竞赛 CCPC \\textbullet{} 全国银奖}{2022.11}{东北赛区 12/380 \\textbullet{} 队伍 \\texttt{ThuTeam}}
+\\awardItem{美国大学生数学建模竞赛 MCM/ICM \\textbullet{} 一等奖}{2021.02}{全球 Top 8\\% \\textbullet{} 建模方向：传染病动力学预测}
 \\awardItem{GitHub 开源影响力}{2023 -- 至今}{个人开源项目累计 \\textbf{5,000+ Stars}，主仓 \\texttt{Agent-RL-Framework} 562 Stars}`;
 
 // ===== STATE =====
@@ -750,7 +814,21 @@ function init(){
   histPush();
   setupResizer();
   setMode(S.editMode);
-  refreshPv();
+  initPanelLayout();
+  if(!mobileMedia.matches)refreshPv();
+}
+
+function readGH(){
+  let config={};
+  try{config=JSON.parse(localStorage.getItem('rp-gh')||'{}')}catch(e){}
+  // Migrate legacy plaintext tokens out of the long-lived repository config.
+  if(config.token){
+    sessionStorage.setItem('rp-gh-token',config.token);
+    delete config.token;
+    localStorage.setItem('rp-gh',JSON.stringify(config));
+  }
+  const token=sessionStorage.getItem('rp-gh-token')||localStorage.getItem('rp-gh-token')||'';
+  return {...config,token};
 }
 
 function loadLS(){
@@ -758,13 +836,12 @@ function loadLS(){
     const f=localStorage.getItem('rp-files');if(f)S.files=JSON.parse(f);
     const t=localStorage.getItem('rp-theme');if(t)S.theme=t;
     const v=localStorage.getItem('rp-variant');if(v)S.variant=v;
-    const gh=localStorage.getItem('rp-gh');if(gh){
-      const c=JSON.parse(gh);
-      document.getElementById('ghToken').value=c.token||'';
-      document.getElementById('ghOwner').value=c.owner||'';
-      document.getElementById('ghRepo').value=c.repo||'llm-resume-template';
-      document.getElementById('ghBranch').value=c.branch||'main';
-    }
+    const c=readGH();
+    document.getElementById('ghToken').value=c.token||'';
+    document.getElementById('ghOwner').value=c.owner||'';
+    document.getElementById('ghRepo').value=c.repo||'llm-resume-template';
+    document.getElementById('ghBranch').value=c.branch||'main';
+    document.getElementById('ghRemember').checked=!!localStorage.getItem('rp-gh-token');
     // Auto-detect owner from GitHub Pages URL
     if(!document.getElementById('ghOwner').value){
       const m=location.hostname.match(/^([^.]+)\.github\.io$/i);
@@ -1109,26 +1186,50 @@ function renderFormEditor(){
   fw.innerHTML=`<div style="padding:14px;color:var(--text2);font-size:12px"><p>此文件暂不支持表单编辑，请切换到「💻 代码」模式</p><pre style="margin-top:10px;background:var(--bg2);padding:10px;border-radius:6px;font-family:var(--mono);font-size:11px;white-space:pre-wrap;color:var(--text)">${esc(S.files[f]||'')}</pre></div>`;
 }
 
+function educationEntries(source){
+  const commands=LP.findCommands(source,'educationItem');
+  const sections=LP.findCommands(source,'sectionTitle');
+  return commands.map((command,index)=>{
+    const nextCommand=commands[index+1];
+    const nextSection=sections.find(section=>section.start>command.end);
+    const boundary=Math.min(nextCommand?nextCommand.start:source.length,nextSection?nextSection.start:source.length);
+    const segment=source.slice(command.end,boundary);
+    const relative=LP.findEnvironment(segment,'itemize');
+    const environment=relative?Object.assign({},relative,{
+      start:command.end+relative.start,
+      end:command.end+relative.end,
+      contentStart:command.end+relative.contentStart,
+      contentEnd:command.end+relative.contentEnd,
+    }):null;
+    return {command,environment,end:environment?environment.end:command.end};
+  });
+}
+
+function commandDetail(command,argumentIndex){
+  const argument=command.args[argumentIndex];
+  return argument?LP.itemizeLines(LP.findEnvironment(argument.value,'itemize')):'';
+}
+
 function renderConfigForm(){
   const c=S.files['config.tex']||'';
-  const gv=re=>{const m=c.match(re);return m?m[1]:''};
+  const gv=key=>LP.getArgument(c,key);
   return `<div class="form-group"><div class="form-group-title">👤 个人信息</div>
-    <div class="form-row"><div class="fld"><label>姓名</label><input value="${esc(gv(/\\\\name\{([^}]*)\}/))}" onchange="updCfg('name',this.value)"></div><div class="fld"><label>职位标签</label><input value="${esc(gv(/\\\\tagline\{([^}]*)\}/))}" onchange="updCfg('tagline',this.value)"></div></div>
-    <div class="form-row"><div class="fld"><label>电话</label><input value="${esc(gv(/\\\\phone\{([^}]*)\}/))}" onchange="updCfg('phone',this.value)"></div><div class="fld"><label>邮箱</label><input value="${esc(gv(/\\\\email\{([^}]*)\}/))}" onchange="updCfg('email',this.value)"></div></div>
-    <div class="form-row"><div class="fld"><label>GitHub</label><input value="${esc(gv(/\\\\github\{([^}]*)\}/))}" onchange="updCfg('github',this.value)"></div><div class="fld"><label>LinkedIn</label><input value="${esc(gv(/\\\\linkedin\{([^}]*)\}/))}" onchange="updCfg('linkedin',this.value)"></div></div>
-    <div class="form-row"><div class="fld"><label>网站</label><input value="${esc(gv(/\\\\website\{([^}]*)\}/))}" onchange="updCfg('website',this.value)"></div><div class="fld"><label>博客</label><input value="${esc(gv(/\\\\blog\{([^}]*)\}/))}" onchange="updCfg('blog',this.value)"></div></div>
-    <div class="form-row"><div class="fld"><label>所在地</label><input value="${esc(gv(/\\\\location\{([^}]*)\}/))}" onchange="updCfg('location',this.value)"></div><div class="fld"><label>关键词</label><input value="${esc(gv(/\\\\keywords\{([^}]*)\}/))}" onchange="updCfg('keywords',this.value)"></div></div>
-    <div class="form-row"><div class="fld"><label>微信</label><input value="${esc(gv(/\\\\wechat\{([^}]*)\}/))}" onchange="updCfg('wechat',this.value)"></div><div class="fld"><label>知乎</label><input value="${esc(gv(/\\\\zhihu\{([^}]*)\}/))}" onchange="updCfg('zhihu',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>姓名</label><input value="${esc(gv('name'))}" onchange="updCfg('name',this.value)"></div><div class="fld"><label>职位标签</label><input value="${esc(gv('tagline'))}" onchange="updCfg('tagline',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>电话</label><input value="${esc(gv('phone'))}" onchange="updCfg('phone',this.value)"></div><div class="fld"><label>邮箱</label><input value="${esc(gv('email'))}" onchange="updCfg('email',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>GitHub</label><input value="${esc(gv('github'))}" onchange="updCfg('github',this.value)"></div><div class="fld"><label>LinkedIn</label><input value="${esc(gv('linkedin'))}" onchange="updCfg('linkedin',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>网站</label><input value="${esc(gv('website'))}" onchange="updCfg('website',this.value)"></div><div class="fld"><label>博客</label><input value="${esc(gv('blog'))}" onchange="updCfg('blog',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>所在地</label><input value="${esc(gv('location'))}" onchange="updCfg('location',this.value)"></div><div class="fld"><label>关键词</label><input value="${esc(gv('keywords'))}" onchange="updCfg('keywords',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>微信</label><input value="${esc(gv('wechat'))}" onchange="updCfg('wechat',this.value)"></div><div class="fld"><label>知乎</label><input value="${esc(gv('zhihu'))}" onchange="updCfg('zhihu',this.value)"></div></div>
   </div>
   <div class="form-group"><div class="form-group-title">📷 头像设置</div>
-    <div class="form-row"><div class="fld"><label>形状</label><select onchange="updCfg('photoshape',this.value)"><option value="circular" ${gv(/\\\\photoshape\{([^}]*)\}/)==='circular'?'selected':''}>圆形</option><option value="square" ${gv(/\\\\photoshape\{([^}]*)\}/)==='square'?'selected':''}>方形</option></select></div><div class="fld"><label>路径</label><input value="${esc(gv(/\\\\photo\{([^}]*)\}/))}" onchange="updCfg('photo',this.value)"></div></div>
+    <div class="form-row"><div class="fld"><label>形状</label><select onchange="updCfg('photoshape',this.value)"><option value="circular" ${gv('photoshape')==='circular'?'selected':''}>圆形</option><option value="square" ${gv('photoshape')==='square'?'selected':''}>方形</option></select></div><div class="fld"><label>路径</label><input value="${esc(gv('photo'))}" onchange="updCfg('photo',this.value)"></div></div>
   </div>`;
 }
 
 function renderHeaderForm(){
   const c=S.files['header.tex']||'';
-  const absM=c.match(/\\begin\{abstract\}([\s\S]*?)\\end\{abstract\}/);
-  const abs=absM?absM[1].trim():'';
+  const environment=LP.findEnvironment(c,'abstract');
+  const abs=environment?environment.content.trim():'';
   return `<div class="form-group"><div class="form-group-title">📝 个人摘要</div>
     <div class="fld"><label>摘要内容（支持 LaTeX 标记）</label><textarea rows="6" style="width:100%;font-size:12px;font-family:var(--mono);line-height:1.6" onchange="updHeader(this.value)">${esc(abs)}</textarea></div>
     <p style="font-size:10px;color:var(--text3);margin-top:4px">💡 使用 \\textbf{文字} 加粗，\\% 表示百分号，\\textbullet{} 分隔</p>
@@ -1136,28 +1237,26 @@ function renderHeaderForm(){
 }
 
 function renderSkillsForm(){
-  const c=S.files['skills.tex']||'';
-  const rows=[...c.matchAll(/\\skillrow\{([^}]*)\}\{([^}]*)\}/g)];
+  const rows=LP.findCommands(S.files['skills.tex']||'','skillrow');
   let html='<div class="form-group"><div class="form-group-title">💻 技能条目</div>';
-  rows.forEach((m,i)=>{
+  rows.forEach((row,i)=>{
     html+=`<div class="form-item"><button class="del" onclick="delSkillRow(${i})">✕</button>
-      <div class="form-row"><div class="fld"><label>分类</label><input value="${esc(m[1])}" onchange="updSkillRow(${i},0,this.value)"></div></div>
-      <div class="fld"><label>内容（支持 \\skilltag{} \\skilltagAccent{} 标签）</label><input value="${esc(m[2])}" onchange="updSkillRow(${i},1,this.value)"></div></div>`;
+      <div class="form-row"><div class="fld"><label>分类</label><input value="${esc(row.args[0]?.value||'')}" onchange="updSkillRow(${i},0,this.value)"></div></div>
+      <div class="fld"><label>内容（支持 \\skilltag{} \\skilltagAccent{} 标签）</label><input value="${esc(row.args[1]?.value||'')}" onchange="updSkillRow(${i},1,this.value)"></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addSkillRow()">+ 添加技能分类</button></div>`;
   return html;
 }
 
 function renderEduForm(){
-  const c=S.files['education.tex']||'';
-  // Parse education items with their detail blocks
-  const items=[...c.matchAll(/\\educationItem(?:\[([^\]]*)\])?\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?/g)];
+  const items=educationEntries(S.files['education.tex']||'');
   let html='<div class="form-group"><div class="form-group-title">🎓 教育经历</div>';
-  items.forEach((m,i)=>{
-    const detail=m[6]?m[6].replace(/^\s*\\item\s*/gm,'').trim():'';
+  items.forEach((entry,i)=>{
+    const args=entry.command.args;
+    const detail=LP.itemizeLines(entry.environment);
     html+=`<div class="form-item"><button class="del" onclick="delEdu(${i})">✕</button>
-      <div class="form-row"><div class="fld"><label>学校</label><input value="${esc(m[2])}" onchange="updEduField(${i},'school',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[3])}" onchange="updEduField(${i},'time',this.value)"></div></div>
-      <div class="form-row"><div class="fld"><label>专业</label><input value="${esc(m[4])}" onchange="updEduField(${i},'major',this.value)"></div><div class="fld"><label>备注</label><input value="${esc(m[5])}" onchange="updEduField(${i},'note',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>学校</label><input value="${esc(args[0]?.value||'')}" onchange="updEduField(${i},'school',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(args[1]?.value||'')}" onchange="updEduField(${i},'time',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>专业</label><input value="${esc(args[2]?.value||'')}" onchange="updEduField(${i},'major',this.value)"></div><div class="fld"><label>备注</label><input value="${esc(args[3]?.value||'')}" onchange="updEduField(${i},'note',this.value)"></div></div>
       <div class="fld"><label>详细说明（每行一条）</label><textarea rows="3" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updEduField(${i},'detail',this.value)">${esc(detail)}</textarea></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addEdu()">+ 添加教育经历</button></div>`;
@@ -1165,18 +1264,14 @@ function renderEduForm(){
 }
 
 function renderExpForm(){
-  const c=S.files['experience.tex']||'';
-  // Parse sections and experience items
-  const sections=[...c.matchAll(/\\sectionTitle\{([^}]*)\}\{[^}]*\}/g)];
-  const items=[...c.matchAll(/\\experienceItem(?:\[([^\]]*)\])?\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*?)(?:\}%?\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})/g)];
-
+  const items=LP.findCommands(S.files['experience.tex']||'','experienceItem');
   let html='<div class="form-group"><div class="form-group-title">💼 经历条目</div>';
-
-  items.forEach((m,i)=>{
-    const detail=m[6]?m[6].replace(/^\s*\\item\s*/gm,'').trim():'';
+  items.forEach((item,i)=>{
+    const args=item.args;
+    const detail=commandDetail(item,3);
     html+=`<div class="form-item"><button class="del" onclick="delExp(${i})">✕</button>
-      <div class="form-row"><div class="fld"><label>公司/机构</label><input value="${esc(m[2])}" onchange="updExpField(${i},'org',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[3])}" onchange="updExpField(${i},'time',this.value)"></div></div>
-      <div class="form-row"><div class="fld"><label>职位</label><input value="${esc(m[4])}" onchange="updExpField(${i},'title',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>公司/机构</label><input value="${esc(args[0]?.value||'')}" onchange="updExpField(${i},'org',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(args[1]?.value||'')}" onchange="updExpField(${i},'time',this.value)"></div></div>
+      <div class="form-row"><div class="fld"><label>职位</label><input value="${esc(args[2]?.value||'')}" onchange="updExpField(${i},'title',this.value)"></div></div>
       <div class="fld"><label>工作内容（每行一条，自动转 itemize）</label><textarea rows="4" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updExpField(${i},'detail',this.value)">${esc(detail)}</textarea></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addExp()">+ 添加经历</button></div>`;
@@ -1184,392 +1279,273 @@ function renderExpForm(){
 }
 
 function renderProjForm(){
-  const c=S.files['projects.tex']||'';
-  const items=[...c.matchAll(/\\projectCard\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*?)(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?\}\{([^}]*)\}/g)];
+  const items=LP.findCommands(S.files['projects.tex']||'','projectCard');
   let html='<div class="form-group"><div class="form-group-title">🔧 项目经历</div>';
-  items.forEach((m,i)=>{
-    const detail=m[5]?m[5].replace(/^\s*\\item\s*/gm,'').trim():'';
+  items.forEach((item,i)=>{
+    const args=item.args;
+    const detail=commandDetail(item,3);
     html+=`<div class="form-item"><button class="del" onclick="delProj(${i})">✕</button>
-      <div class="form-row"><div class="fld"><label>项目名</label><input value="${esc(m[1])}" onchange="updProjField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[2])}" onchange="updProjField(${i},'time',this.value)"></div></div>
-      <div class="fld"><label>简介</label><input value="${esc(m[3])}" onchange="updProjField(${i},'desc',this.value)"></div>
+      <div class="form-row"><div class="fld"><label>项目名</label><input value="${esc(args[0]?.value||'')}" onchange="updProjField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(args[1]?.value||'')}" onchange="updProjField(${i},'time',this.value)"></div></div>
+      <div class="fld"><label>简介</label><input value="${esc(args[2]?.value||'')}" onchange="updProjField(${i},'desc',this.value)"></div>
       <div class="fld"><label>详细说明（每行一条）</label><textarea rows="3" style="width:100%;font-size:11px;font-family:var(--mono)" onchange="updProjField(${i},'detail',this.value)">${esc(detail)}</textarea></div>
-      <div class="fld"><label>链接</label><input value="${esc(m[6]||'')}" onchange="updProjField(${i},'links',this.value)"></div></div>`;
+      <div class="fld"><label>链接</label><input value="${esc(args[4]?.value||'')}" onchange="updProjField(${i},'links',this.value)"></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addProj()">+ 添加项目</button></div>`;
   return html;
 }
 
 function renderPubForm(){
-  const c=S.files['publications.tex']||'';
-  const pubs=[...c.matchAll(/\\publicationItem\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/g)];
-  const awards=[...c.matchAll(/\\awardItem\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}/g)];
+  const source=S.files['publications.tex']||'';
+  const pubs=LP.findCommands(source,'publicationItem');
+  const awards=LP.findCommands(source,'awardItem');
   let html='<div class="form-group"><div class="form-group-title">📝 论文</div>';
-  pubs.forEach((m,i)=>{
+  pubs.forEach((pub,i)=>{
+    const args=pub.args;
     html+=`<div class="form-item"><button class="del" onclick="delPub(${i})">✕</button>
-      <div class="fld"><label>标题</label><input value="${esc(m[1])}" onchange="updPubField(${i},'title',this.value)"></div>
-      <div class="form-row"><div class="fld"><label>作者</label><input value="${esc(m[2])}" onchange="updPubField(${i},'authors',this.value)"></div><div class="fld"><label>venue</label><input value="${esc(m[3])}" onchange="updPubField(${i},'venue',this.value)"></div></div>
-      <div class="fld"><label>链接</label><input value="${esc(m[4])}" onchange="updPubField(${i},'links',this.value)"></div></div>`;
+      <div class="fld"><label>标题</label><input value="${esc(args[0]?.value||'')}" onchange="updPubField(${i},'title',this.value)"></div>
+      <div class="form-row"><div class="fld"><label>作者</label><input value="${esc(args[1]?.value||'')}" onchange="updPubField(${i},'authors',this.value)"></div><div class="fld"><label>venue</label><input value="${esc(args[2]?.value||'')}" onchange="updPubField(${i},'venue',this.value)"></div></div>
+      <div class="fld"><label>链接</label><input value="${esc(args[3]?.value||'')}" onchange="updPubField(${i},'links',this.value)"></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addPub()">+ 添加论文</button></div>`;
 
   html+='<div class="form-group"><div class="form-group-title">🏆 荣誉</div>';
-  awards.forEach((m,i)=>{
+  awards.forEach((award,i)=>{
+    const args=award.args;
     html+=`<div class="form-item"><button class="del" onclick="delAward(${i})">✕</button>
-      <div class="form-row"><div class="fld"><label>奖项</label><input value="${esc(m[1])}" onchange="updAwardField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(m[2])}" onchange="updAwardField(${i},'time',this.value)"></div></div>
-      <div class="fld"><label>说明</label><input value="${esc(m[3])}" onchange="updAwardField(${i},'desc',this.value)"></div></div>`;
+      <div class="form-row"><div class="fld"><label>奖项</label><input value="${esc(args[0]?.value||'')}" onchange="updAwardField(${i},'name',this.value)"></div><div class="fld"><label>时间</label><input value="${esc(args[1]?.value||'')}" onchange="updAwardField(${i},'time',this.value)"></div></div>
+      <div class="fld"><label>说明</label><input value="${esc(args[2]?.value||'')}" onchange="updAwardField(${i},'desc',this.value)"></div></div>`;
   });
   html+=`<button class="add-btn" onclick="addAward()">+ 添加荣誉</button></div>`;
   return html;
 }
 
 // ===== FORM UPDATE HELPERS =====
-function updCfg(key,val){
-  let c=S.files['config.tex'];
-  // Escape special regex chars in val for safe replacement
-  const escapedVal=val.replace(/\\/g,'\\\\');
-  const re=new RegExp(`\\\\${key}\\{[^}]*\\}`);
-  if(re.test(c)){
-    c=c.replace(re,`\\${key}{${val}}`);
-  }else{
-    // Add commented-out field
-    const cre=new RegExp(`%\\s*\\\\${key}\\{[^}]*\\}`);
-    if(cre.test(c)){
-      c=c.replace(cre,`\\${key}{${val}}`);
-    }
+function saveFormSource(name,content,rerender){
+  S.files[name]=content;
+  if(S.curFile===name){
+    document.getElementById('editor').value=content;
+    highlightUpdate();
   }
-  S.files['config.tex']=c;
-  if(S.curFile==='config.tex'){document.getElementById('editor').value=c;highlightUpdate()}
   markMod();saveLS();histPush();
-  // Don't call syncFormFromConfig here to avoid re-rendering the form during user input
-}
-function updHeader(val){
-  let c=S.files['header.tex'];
-  c=c.replace(/\\begin\{abstract\}[\s\S]*?\\end\{abstract\}/,`\\begin{abstract}\n${val}\n\\end{abstract}`);
-  S.files['header.tex']=c;
-  if(S.curFile==='header.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();
+  if(rerender)renderFormEditor();
 }
 
-function updSkillRow(i,fi,val){
+function updCfg(key,val){
+  saveFormSource('config.tex',LP.upsertCommand(S.files['config.tex'],key,val),false);
+}
+
+function updHeader(val){
+  const c=S.files['header.tex'];
+  const environment=LP.findEnvironment(c,'abstract');
+  if(!environment)return;
+  const next=c.slice(0,environment.contentStart)+`\n${val}\n`+c.slice(environment.contentEnd);
+  saveFormSource('header.tex',next,false);
+}
+
+function updSkillRow(i,field,val){
   const c=S.files['skills.tex'];
-  const rows=[...c.matchAll(/\\skillrow\{([^}]*)\}\{([^}]*)\}/g)];
-  if(rows[i]){
-    const old=rows[i][0];
-    const nv=fi===0?`\\skillrow{${val}}{${rows[i][2]}}`:`\\skillrow{${rows[i][1]}}{${val}}`;
-    // Use indexOf + substring for exact replacement (avoid regex special chars in val)
-    const idx=c.indexOf(old);
-    if(idx!==-1){
-      S.files['skills.tex']=c.substring(0,idx)+nv+c.substring(idx+old.length);
-    }else{
-      S.files['skills.tex']=c.replace(old,nv);
-    }
-    if(S.curFile==='skills.tex'){document.getElementById('editor').value=S.files['skills.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();
-  }
+  const row=LP.findCommands(c,'skillrow')[i];
+  if(row)saveFormSource('skills.tex',LP.replaceArgument(c,row,field,val),false);
 }
+
 function addSkillRow(){
-  let c=S.files['skills.tex'];
-  c=c.trimEnd()+`\n\\skillrow{新分类}{\\skilltag{技能1} \\skilltag{技能2}}`;
-  S.files['skills.tex']=c;
-  if(S.curFile==='skills.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['skills.tex'].trimEnd()+`\n\\skillrow{新分类}{\\skilltag{技能1} \\skilltag{技能2}}`;
+  saveFormSource('skills.tex',c,true);
 }
+
 function delSkillRow(i){
   const c=S.files['skills.tex'];
-  const rows=[...c.matchAll(/\\skillrow\{[^}]*\}\{[^}]*\}/g)];
-  if(rows[i]){
-    S.files['skills.tex']=c.replace(rows[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='skills.tex'){document.getElementById('editor').value=S.files['skills.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const row=LP.findCommands(c,'skillrow')[i];
+  if(row)saveFormSource('skills.tex',LP.removeCommand(c,row),true);
 }
 
-// Education form helpers
 function updEduField(i,field,val){
   const c=S.files['education.tex'];
-  const items=[...c.matchAll(/(\\educationItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?)/g)];
-  if(!items[i])return;
-  let item=items[i][0];
-
+  const entry=educationEntries(c)[i];
+  if(!entry)return;
   if(field==='detail'){
-    // Rebuild itemize block
-    const lines=val.split('\n').filter(l=>l.trim());
-    const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
-    // Remove existing itemize
-    item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
-    item=item.trimEnd()+itemize;
-    S.files['education.tex']=c.replace(items[i][0],item);
-    if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();return;
+    const block=LP.makeItemize(val);
+    let next=c;
+    if(entry.environment){
+      next=block?c.slice(0,entry.environment.start)+block+c.slice(entry.environment.end):LP.removeRange(c,entry.environment.start,entry.environment.end);
+    }else if(block){
+      next=c.slice(0,entry.command.end)+'\n'+block+c.slice(entry.command.end);
+    }
+    saveFormSource('education.tex',next,false);
+    return;
   }
-
-  // For other fields, rebuild the educationItem (without itemize)
-  const logoMatch=item.match(/\[([^\]]+)\]/);
-  const logo=logoMatch?`[${logoMatch[1]}]`:'';
-  const bareItem=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'').trim();
-  const parts=[...bareItem.matchAll(/\{([^}]*)\}/g)].map(m=>m[1]);
-
-  switch(field){
-    case 'school':parts[0]=val;break;
-    case 'time':parts[1]=val;break;
-    case 'major':parts[2]=val;break;
-    case 'note':parts[3]=val;break;
-  }
-
-  // Preserve itemize block
-  const itemizeMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
-  const itemizeBlock=itemizeMatch?itemizeMatch[1]:'';
-  const newItem=`\\educationItem${logo}{${parts[0]}}{${parts[1]}}{${parts[2]}}{${parts[3]}}${itemizeBlock}`;
-
-  S.files['education.tex']=c.replace(items[i][0],newItem);
-  if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
-  markMod();saveLS();histPush();
+  const argumentIndex={school:0,time:1,major:2,note:3}[field];
+  if(argumentIndex!==undefined)saveFormSource('education.tex',LP.replaceArgument(c,entry.command,argumentIndex,val),false);
 }
+
 function addEdu(){
-  let c=S.files['education.tex'];
-  c=c.trimEnd()+`\n\n\\educationItem{学校名}{20XX.XX -- 20XX.XX}{专业 · 学位}{附注}`;
-  S.files['education.tex']=c;
-  if(S.curFile==='education.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['education.tex'].trimEnd()+`\n\n\\educationItem{学校名}{20XX.XX -- 20XX.XX}{专业 · 学位}{附注}`;
+  saveFormSource('education.tex',c,true);
 }
+
 function delEdu(i){
   const c=S.files['education.tex'];
-  const items=[...c.matchAll(/(\\educationItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?)/g)];
-  if(items[i]){
-    S.files['education.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='education.tex'){document.getElementById('editor').value=S.files['education.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const entry=educationEntries(c)[i];
+  if(entry)saveFormSource('education.tex',LP.removeRange(c,entry.command.start,entry.end),true);
 }
 
-// Experience form helpers
 function updExpField(i,field,val){
   const c=S.files['experience.tex'];
-  const items=[...c.matchAll(/(\\experienceItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\})/g)];
-  if(!items[i])return;
-  let item=items[i][0];
-
+  const item=LP.findCommands(c,'experienceItem')[i];
+  if(!item)return;
   if(field==='detail'){
-    const lines=val.split('\n').filter(l=>l.trim());
-    const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
-    item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
-    item=item.trimEnd()+itemize;
-    S.files['experience.tex']=c.replace(items[i][0],item);
-    if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();return;
+    const block=LP.makeItemize(val);
+    saveFormSource('experience.tex',LP.replaceArgument(c,item,3,block?`%\n${block}\n`:''),false);
+    return;
   }
-
-  // Parse and rebuild for other fields
-  const logoMatch=item.match(/\[([^\]]+)\]/);
-  const logo=logoMatch?`[${logoMatch[1]}]`:'';
-  const bareItem=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'').trim();
-  // Extract the 4 fields: org, time, title, desc (the last {..}% block)
-  const fieldMatches=[...bareItem.matchAll(/\{([^}]*)\}/g)].map(m=>m[1]);
-  const org=fieldMatches[0]||'';
-  const time=fieldMatches[1]||'';
-  const title=fieldMatches[2]||'';
-  const desc=fieldMatches[3]||'';
-
-  let newOrg=org,newTime=time,newTitle=title,newDesc=desc;
-  switch(field){
-    case 'org':newOrg=val;break;
-    case 'time':newTime=val;break;
-    case 'title':newTitle=val;break;
-    case 'desc':newDesc=val;break;
-  }
-
-  // Preserve itemize block
-  const itemizeMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
-  const itemizeBlock=itemizeMatch?itemizeMatch[1]:'';
-  const newItem=`\\experienceItem${logo}{${newOrg}}{${newTime}}{${newTitle}}{${newDesc}%${itemizeBlock}\n}\n`;
-
-  S.files['experience.tex']=c.replace(items[i][0],newItem);
-  if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
-  markMod();saveLS();histPush();
+  const argumentIndex={org:0,time:1,title:2}[field];
+  if(argumentIndex!==undefined)saveFormSource('experience.tex',LP.replaceArgument(c,item,argumentIndex,val),false);
 }
+
 function addExp(){
-  let c=S.files['experience.tex'];
-  c=c.trimEnd()+`\n\n\\experienceItem{公司名}{20XX.XX -- 20XX.XX}{职位}{%\n\\begin{itemize}\n  \\item 工作内容\n\\end{itemize}\n}\n`;
-  S.files['experience.tex']=c;
-  if(S.curFile==='experience.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['experience.tex'].trimEnd()+`\n\n\\experienceItem{公司名}{20XX.XX -- 20XX.XX}{职位}{%\n\\begin{itemize}\n  \\item 工作内容\n\\end{itemize}\n}\n`;
+  saveFormSource('experience.tex',c,true);
 }
+
 function delExp(i){
   const c=S.files['experience.tex'];
-  const items=[...c.matchAll(/(\\experienceItem(?:\[[^\]]*\])?\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\})/g)];
-  if(items[i]){
-    S.files['experience.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='experience.tex'){document.getElementById('editor').value=S.files['experience.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const item=LP.findCommands(c,'experienceItem')[i];
+  if(item)saveFormSource('experience.tex',LP.removeCommand(c,item),true);
 }
 
-// Project form helpers
 function updProjField(i,field,val){
   const c=S.files['projects.tex'];
-  const items=[...c.matchAll(/(\\projectCard\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)(?:\s*\\begin\{itemize\}([\s\S]*?)\\end\{itemize\})?\}\{([^}]*)\})/g)];
-  if(!items[i])return;
-  let item=items[i][0];
-  let name=items[i][2],time=items[i][3],desc=items[i][4],detail=items[i][5]||'',links=items[i][6]||'';
-
-  switch(field){
-    case 'name':name=val;break;
-    case 'time':time=val;break;
-    case 'desc':desc=val;break;
-    case 'links':links=val;break;
-    case 'detail':
-      const lines=val.split('\n').filter(l=>l.trim());
-      const itemize=lines.length?`\n\\begin{itemize}\n${lines.map(l=>'  \\item '+l).join('\n')}\n\\end{itemize}`:'';
-      // Remove existing itemize and rebuild
-      item=item.replace(/\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/,'');
-      // Rebuild the projectCard with new itemize
-      const newItem=`\\projectCard{${name}}{${time}}\n{${desc}}{%${itemize?itemize:''}\n}{${links}}`;
-      S.files['projects.tex']=c.replace(items[i][0],newItem);
-      if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
-      markMod();saveLS();histPush();return;
+  const item=LP.findCommands(c,'projectCard')[i];
+  if(!item)return;
+  if(field==='detail'){
+    const block=LP.makeItemize(val);
+    saveFormSource('projects.tex',LP.replaceArgument(c,item,3,block?`%\n${block}\n`:''),false);
+    return;
   }
-
-  // Rebuild for non-detail fields
-  const detailMatch=item.match(/(\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})/);
-  const itemizeBlock=detailMatch?detailMatch[1]:'';
-  const newItem=`\\projectCard{${name}}{${time}}\n{${desc}}{%${itemizeBlock}\n}{${links}}`;
-
-  S.files['projects.tex']=c.replace(items[i][0],newItem);
-  if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
-  markMod();saveLS();histPush();
+  const argumentIndex={name:0,time:1,desc:2,links:4}[field];
+  if(argumentIndex!==undefined)saveFormSource('projects.tex',LP.replaceArgument(c,item,argumentIndex,val),false);
 }
+
 function addProj(){
-  let c=S.files['projects.tex'];
-  c=c.trimEnd()+`\n\n\\projectCard{项目名}{20XX.XX -- 20XX.XX}\n{项目简介}{%\n\\begin{itemize}\n  \\item 详细说明\n\\end{itemize}\n}{\\faGithub\\ github.com/user/project}`;
-  S.files['projects.tex']=c;
-  if(S.curFile==='projects.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['projects.tex'].trimEnd()+`\n\n\\projectCard{项目名}{20XX.XX -- 20XX.XX}\n{项目简介}{%\n\\begin{itemize}\n  \\item 详细说明\n\\end{itemize}\n}{\\faGithub\\ github.com/user/project}`;
+  saveFormSource('projects.tex',c,true);
 }
+
 function delProj(i){
   const c=S.files['projects.tex'];
-  const items=[...c.matchAll(/(\\projectCard\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*(?:\s*\\begin\{itemize\}[\s\S]*?\\end\{itemize\})?\}\{[^}]*\})/g)];
-  if(items[i]){
-    S.files['projects.tex']=c.replace(items[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='projects.tex'){document.getElementById('editor').value=S.files['projects.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const item=LP.findCommands(c,'projectCard')[i];
+  if(item)saveFormSource('projects.tex',LP.removeCommand(c,item),true);
 }
 
-// Publication form helpers
 function updPubField(i,field,val){
   const c=S.files['publications.tex'];
-  const pubs=[...c.matchAll(/(\\publicationItem\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\})/g)];
-  if(!pubs[i])return;
-  let title=pubs[i][2],authors=pubs[i][3],venue=pubs[i][4],links=pubs[i][5];
-
-  switch(field){
-    case 'title':title=val;break;
-    case 'authors':authors=val;break;
-    case 'venue':venue=val;break;
-    case 'links':links=val;break;
-  }
-
-  const newItem=`\\publicationItem\n{${title}}\n{${authors}}\n{${venue}}\n{${links}}`;
-  S.files['publications.tex']=c.replace(pubs[i][0],newItem);
-  if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
-  markMod();saveLS();histPush();
+  const pub=LP.findCommands(c,'publicationItem')[i];
+  if(!pub)return;
+  const argumentIndex={title:0,authors:1,venue:2,links:3}[field];
+  if(argumentIndex!==undefined)saveFormSource('publications.tex',LP.replaceArgument(c,pub,argumentIndex,val),false);
 }
+
 function addPub(){
-  let c=S.files['publications.tex'];
-  c=c.trimEnd()+`\n\n\\publicationItem\n{Paper Title}\n{\\textbf{Author Name}, Co-author}\n{Conference Year}\n{\\faFilePdf\\ Paper}`;
-  S.files['publications.tex']=c;
-  if(S.curFile==='publications.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['publications.tex'].trimEnd()+`\n\n\\publicationItem\n{Paper Title}\n{\\textbf{Author Name}, Co-author}\n{Conference Year}\n{\\faFilePdf\\ Paper}`;
+  saveFormSource('publications.tex',c,true);
 }
+
 function delPub(i){
   const c=S.files['publications.tex'];
-  const pubs=[...c.matchAll(/(\\publicationItem\s*\{[^}]*\}\s*\{[^}]*\}\s*\{[^}]*\}\s*\{[^}]*\})/g)];
-  if(pubs[i]){
-    S.files['publications.tex']=c.replace(pubs[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const pub=LP.findCommands(c,'publicationItem')[i];
+  if(pub)saveFormSource('publications.tex',LP.removeCommand(c,pub),true);
 }
 
 function updAwardField(i,field,val){
   const c=S.files['publications.tex'];
-  const awards=[...c.matchAll(/(\\awardItem\{([^}]*)\}\{([^}]*)\}\{([^}]*)\})/g)];
-  if(!awards[i])return;
-  let name=awards[i][2],time=awards[i][3],desc=awards[i][4];
-
-  switch(field){
-    case 'name':name=val;break;
-    case 'time':time=val;break;
-    case 'desc':desc=val;break;
-  }
-
-  const newItem=`\\awardItem{${name}}{${time}}{${desc}}`;
-  S.files['publications.tex']=c.replace(awards[i][0],newItem);
-  if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
-  markMod();saveLS();histPush();
+  const award=LP.findCommands(c,'awardItem')[i];
+  if(!award)return;
+  const argumentIndex={name:0,time:1,desc:2}[field];
+  if(argumentIndex!==undefined)saveFormSource('publications.tex',LP.replaceArgument(c,award,argumentIndex,val),false);
 }
+
 function addAward(){
-  let c=S.files['publications.tex'];
-  c=c.trimEnd()+`\n\n\\awardItem{奖项名称}{年份}{说明}`;
-  S.files['publications.tex']=c;
-  if(S.curFile==='publications.tex'){document.getElementById('editor').value=c;highlightUpdate()}
-  markMod();saveLS();histPush();renderFormEditor();
+  const c=S.files['publications.tex'].trimEnd()+`\n\n\\awardItem{奖项名称}{年份}{说明}`;
+  saveFormSource('publications.tex',c,true);
 }
+
 function delAward(i){
   const c=S.files['publications.tex'];
-  const awards=[...c.matchAll(/(\\awardItem\{[^}]*\}\{[^}]*\}\{[^}]*\})/g)];
-  if(awards[i]){
-    S.files['publications.tex']=c.replace(awards[i][0],'').replace(/\n{3,}/g,'\n\n');
-    if(S.curFile==='publications.tex'){document.getElementById('editor').value=S.files['publications.tex'];highlightUpdate()}
-    markMod();saveLS();histPush();renderFormEditor();
-  }
+  const award=LP.findCommands(c,'awardItem')[i];
+  if(award)saveFormSource('publications.tex',LP.removeCommand(c,award),true);
 }
 
 // ===== CONFIG SYNC =====
 function syncFormFromConfig(){
   const c=S.files['config.tex']||'';
-  const gv=re=>{const m=c.match(re);return m?m[1]:''};
   const ids=['fName','fTagline','fKeywords','fPhone','fEmail','fGithub','fLinkedin','fWebsite','fBlog','fLocation','fWechat','fZhihu'];
   const keys=['name','tagline','keywords','phone','email','github','linkedin','website','blog','location','wechat','zhihu'];
   ids.forEach((id,i)=>{
     const el=document.getElementById(id);
-    if(el)el.value=gv(new RegExp(`\\\\${keys[i]}\\{([^}]*)\\}`));
+    if(el)el.value=LP.getArgument(c,keys[i]);
   });
 }
+
 function syncCfg(){
-  const c=S.files['config.tex']||'';
+  let c=S.files['config.tex']||'';
   const ups={name:'fName',tagline:'fTagline',keywords:'fKeywords',phone:'fPhone',email:'fEmail',github:'fGithub',linkedin:'fLinkedin',website:'fWebsite',blog:'fBlog',location:'fLocation',wechat:'fWechat',zhihu:'fZhihu'};
-  let nc=c;
-  for(const[k,id]of Object.entries(ups)){
-    const v=document.getElementById(id)?.value;
-    if(v!==undefined&&v!==''){
-      const re=new RegExp(`\\\\${k}\\{[^}]*\\}`);
-      if(re.test(nc)){
-        nc=nc.replace(re,`\\${k}{${v}}`);
-      }else{
-        // Handle commented-out fields
-        const cre=new RegExp(`%\\s*\\\\${k}\\{[^}]*\\}`);
-        if(cre.test(nc))nc=nc.replace(cre,`\\${k}{${v}}`);
-      }
-    }
+  for(const[key,id]of Object.entries(ups)){
+    const value=document.getElementById(id)?.value;
+    if(value)c=LP.upsertCommand(c,key,value);
   }
-  S.files['config.tex']=nc;
-  if(S.curFile==='config.tex'){document.getElementById('editor').value=nc;highlightUpdate()}
-  markMod();saveLS();histPush();
+  saveFormSource('config.tex',c,false);
 }
 
 // ===== SIDEBAR / PREVIEW =====
-function togSide(){document.getElementById('side').classList.toggle('off')}
-function togPv(){document.getElementById('pvArea').classList.toggle('off')}
+const mobileMedia=window.matchMedia('(max-width: 900px)');
+function closeSide(){
+  document.getElementById('side').classList.add('off');
+  document.getElementById('sideBackdrop').classList.remove('show');
+  document.getElementById('sideToggle').setAttribute('aria-expanded','false');
+}
+function closePv(){
+  document.getElementById('pvArea').classList.add('off');
+  document.getElementById('pvToggle').setAttribute('aria-expanded','false');
+}
+function togSide(){
+  const side=document.getElementById('side');
+  if(side.classList.contains('off')){
+    closePv();
+    side.classList.remove('off');
+    document.getElementById('sideBackdrop').classList.toggle('show',mobileMedia.matches);
+    document.getElementById('sideToggle').setAttribute('aria-expanded','true');
+  }else closeSide();
+}
+function togPv(){
+  const preview=document.getElementById('pvArea');
+  if(preview.classList.contains('off')){
+    closeSide();
+    preview.classList.remove('off');
+    document.getElementById('pvToggle').setAttribute('aria-expanded','true');
+    if(!document.querySelector('#pvBody iframe'))refreshPv();
+  }else closePv();
+}
+function initPanelLayout(){
+  if(mobileMedia.matches){closeSide();closePv()}
+  mobileMedia.addEventListener('change',event=>{
+    closeSide();closePv();
+    if(!event.matches){
+      document.getElementById('side').classList.remove('off');
+      document.getElementById('pvArea').classList.remove('off');
+      document.getElementById('sideToggle').setAttribute('aria-expanded','true');
+      document.getElementById('pvToggle').setAttribute('aria-expanded','true');
+    }
+  });
+}
 function togSec(el){el.classList.toggle('shut');el.nextElementSibling.classList.toggle('off')}
 
 function previewUrl(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const gh=readGH();
   const root=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}/`:'';
   return `${root}preview.html?pdf=${encodeURIComponent(getVariant().pdf)}`;
 }
 function pdfUrl(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const gh=readGH();
   const root=gh.owner&&gh.repo?`https://${gh.owner}.github.io/${gh.repo}/`:'';
   return `${root}pdfs/${getVariant().pdf}`;
 }
@@ -1584,8 +1560,21 @@ function fullPv(){window.open(previewUrl(),'_blank','noopener')}
 function showGH(){document.getElementById('ghModal').classList.add('show')}
 function closeM(id){document.getElementById(id).classList.remove('show')}
 function saveGH(){
-  localStorage.setItem('rp-gh',JSON.stringify({token:document.getElementById('ghToken').value,owner:document.getElementById('ghOwner').value,repo:document.getElementById('ghRepo').value,branch:document.getElementById('ghBranch').value}));
-  closeM('ghModal');renderVariants();toast('s','GitHub 配置已保存');
+  const token=document.getElementById('ghToken').value.trim();
+  const remember=document.getElementById('ghRemember').checked;
+  localStorage.setItem('rp-gh',JSON.stringify({owner:document.getElementById('ghOwner').value.trim(),repo:document.getElementById('ghRepo').value.trim(),branch:document.getElementById('ghBranch').value.trim()||'main'}));
+  if(token)sessionStorage.setItem('rp-gh-token',token);else sessionStorage.removeItem('rp-gh-token');
+  if(remember&&token)localStorage.setItem('rp-gh-token',token);else localStorage.removeItem('rp-gh-token');
+  closeM('ghModal');renderVariants();toast('s',remember&&token?'配置已保存，Token 已按选择持久化':'配置已保存，Token 仅保留在当前会话');
+}
+function clearGHToken(){
+  sessionStorage.removeItem('rp-gh-token');
+  localStorage.removeItem('rp-gh-token');
+  const config=readGH();delete config.token;
+  localStorage.setItem('rp-gh',JSON.stringify({owner:config.owner||'',repo:config.repo||'llm-resume-template',branch:config.branch||'main'}));
+  document.getElementById('ghToken').value='';
+  document.getElementById('ghRemember').checked=false;
+  toast('s','Token 已从会话和持久存储中清除');
 }
 
 function getSourceFiles(){
@@ -1597,7 +1586,7 @@ function getSourceFiles(){
 }
 
 async function build(){
-  const gh=JSON.parse(localStorage.getItem('rp-gh')||'{}');
+  const gh=readGH();
   if(!gh.token||!gh.owner){showGH();toast('i','请先配置 GitHub Token');return}
   S.files[S.curFile]=document.getElementById('editor').value;saveLS();
   const v=getVariant();
@@ -1789,6 +1778,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     document.getElementById('shortcutOverlay').classList.remove('show');
     document.getElementById('ghModal').classList.remove('show');
+    if(mobileMedia.matches){closeSide();closePv()}
     const sb=document.getElementById('searchBar');
     if(sb.classList.contains('show'))toggleSearch();
   }

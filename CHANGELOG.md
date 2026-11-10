@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-10
+
+### Fixed
+- Parse nested LaTeX commands reliably in form editors and preserve content during round trips.
+- Replace hidden mobile sidebar and preview with an accessible drawer and fullscreen panel.
+- Keep GitHub tokens session-only by default, with explicit persistence, legacy migration, and one-click clearing.
+- Align editor default projects and publications with the real LaTeX modules.
+- Synchronize version labels from VERSION and add parser regression tests.
+
 ## [3.9.0] - 2026-06-22
 
 ### Added

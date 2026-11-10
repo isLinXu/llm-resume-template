@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 resume-pro LaTeX Template Test Suite
 =====================================
 Static analysis tests for the resume-pro LaTeX template project.
@@ -9,7 +9,7 @@ Usage:
     python3 scripts/test_suite.py
 
 Tests:
-    1. Version consistency across cls, config, README, CHANGELOG
+    1. Version consistency across cls, VERSION, CHANGELOG
     2. Input path validity (all \input{} references resolve)
     3. Logo macro coverage (config.tex \clearlogos vs \clearlogos list)
     4. Theme validity (all \settheme{} values are known)
@@ -18,10 +18,11 @@ Tests:
 """
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Set, Tuple
+from typing import List
 
 # Project root relative to this script
 SCRIPT_DIR = Path(__file__).parent
@@ -41,70 +42,63 @@ def log(msg: str) -> None:
 
 # ---------- Test 1: Version Consistency ----------
 def test_version_consistency() -> TestResult:
-    """Check that version numbers are consistent across key files."""
+    """Check the required class, VERSION, and changelog version labels."""
     messages = []
     versions = {}
 
-    # Extract from resume-pro.cls
     cls_file = PROJECT_ROOT / "resume-pro.cls"
     if cls_file.exists():
-        text = cls_file.read_text()
-        m = re.search(r'v(\d+\.\d+\.\d+)', text)
-        if m:
-            versions['resume-pro.cls'] = m.group(1)
+        text = cls_file.read_text(encoding="utf-8")
+        match = re.search(r'\\ProvidesClass\{resume-pro\}\[[^]]*v(\d+\.\d+\.\d+)', text)
+        if match:
+            versions['resume-pro.cls'] = match.group(1)
         else:
-            messages.append("❌ Could not find version in resume-pro.cls")
+            messages.append("❌ Could not find the class release version in resume-pro.cls")
     else:
         messages.append(f"❌ Missing file: {cls_file}")
 
-    # Extract from config.tex
-    config_file = PROJECT_ROOT / "config.tex"
-    if config_file.exists():
-        text = config_file.read_text()
-        m = re.search(r'\\version\{v(\d+\.\d+\.\d+)', text)
-        if m:
-            versions['config.tex'] = m.group(1)
-        else:
-            messages.append("❌ Could not find \\version{} in config.tex")
-    else:
-        messages.append(f"❌ Missing file: {config_file}")
-
-    # Extract from VERSION file
     version_file = PROJECT_ROOT.parent / "VERSION"
     if version_file.exists():
-        versions['VERSION'] = version_file.read_text().strip()
+        version = version_file.read_text(encoding="utf-8").strip()
+        if re.fullmatch(r'\d+\.\d+\.\d+', version):
+            versions['VERSION'] = version
+        else:
+            messages.append("❌ VERSION does not contain a semantic version")
     else:
-        messages.append("⚠️  VERSION file not found (recommended for single-source versioning)")
+        messages.append(f"❌ Missing required version source: {version_file}")
 
-    # Extract from CHANGELOG
     changelog = PROJECT_ROOT.parent / "CHANGELOG.md"
     if changelog.exists():
-        text = changelog.read_text()
-        m = re.search(r'##\s*\[(\d+\.\d+\.\d+)\]', text)
-        if m:
-            versions['CHANGELOG.md'] = m.group(1)
+        text = changelog.read_text(encoding="utf-8")
+        match = re.search(r'^##\s*\[(\d+\.\d+\.\d+)\]\s*-\s*\d{4}-\d{2}-\d{2}$', text, re.M)
+        if match:
+            versions['CHANGELOG.md'] = match.group(1)
+        else:
+            messages.append("❌ Could not find a dated release in CHANGELOG.md")
     else:
-        messages.append("⚠️  CHANGELOG.md not found")
+        messages.append(f"❌ Missing required version source: {changelog}")
 
     if len(set(versions.values())) > 1:
         messages.append("❌ Version mismatch detected:")
         for src, ver in sorted(versions.items()):
             messages.append(f"     {src}: v{ver}")
-    elif len(versions) >= 2:
-        messages.append(f"✅ All versions consistent: v{list(versions.values())[0]}")
-    else:
-        messages.append("⚠️  Not enough version sources found to compare")
+    elif len(versions) == 3 and not messages:
+        messages.append(f"✅ All required versions consistent: v{version_file.read_text(encoding='utf-8').strip()}")
+    elif not messages:
+        messages.append("❌ Not all required version sources were read")
 
     return TestResult(
         name="Version Consistency",
-        passed=len(set(versions.values())) <= 1 and len(versions) >= 2,
+        passed=len(versions) == 3 and len(set(versions.values())) == 1 and not any(
+            message.startswith("❌") for message in messages
+        ),
         messages=messages
     )
 
 
 # ---------- Test 2: Input Path Validity ----------
 def test_input_paths() -> TestResult:
-    """Verify all \\input{} and \\include{} references resolve to existing files."""
+    r"""Verify all \input{} and \include{} references resolve to existing files."""
     messages = []
     errors = 0
 
@@ -138,7 +132,7 @@ def test_input_paths() -> TestResult:
 
 # ---------- Test 3: Logo Macro Coverage ----------
 def test_logo_coverage() -> TestResult:
-    """Ensure config.tex Logo macros are covered by \clearlogos."""
+    r"""Ensure config.tex Logo macros are covered by \clearlogos."""
     messages = []
     config_file = PROJECT_ROOT / "config.tex"
     cls_file = PROJECT_ROOT / "resume-pro.cls"
@@ -467,42 +461,54 @@ def test_command_definitions() -> TestResult:
 
 # ---------- Test 6: Duplicate File Detection ----------
 def test_duplicate_files() -> TestResult:
-    """Detect duplicate files (same name, different directory)."""
+    """Detect duplicate tracked filenames without scanning local audit artifacts."""
     messages = []
     from collections import defaultdict
 
+    repository_root = PROJECT_ROOT.parent
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=repository_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        return TestResult("Duplicate File Detection", False, [f"❌ Could not list tracked files: {error}"])
+
+    ignored_names = {'.gitignore', '.DS_Store', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md'}
     files_by_name = defaultdict(list)
-    for f in PROJECT_ROOT.parent.rglob("*"):
-        if f.is_file() and f.name not in {'.gitignore', '.DS_Store', 'README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md'}:
-            if '.git' in str(f):
-                continue
-            files_by_name[f.name].append(f)
+    for relative in result.stdout.split('\0'):
+        if not relative:
+            continue
+        path = repository_root / relative
+        if path.name not in ignored_names:
+            files_by_name[path.name].append(path)
 
     duplicates = {name: paths for name, paths in files_by_name.items() if len(paths) > 1}
-    # Filter out legitimate duplicates (e.g., docs/pdfs/ vs latex_resume_pro/variants/pdf/)
-    # Only warn about non-PDF, non-CI-generated duplicates
-    real_duplicates = {}
-    for name, paths in duplicates.items():
-        if not name.endswith('.pdf') and not name.endswith('.log') and not name.endswith('.aux'):
-            real_duplicates[name] = paths
+    real_duplicates = {
+        name: paths
+        for name, paths in duplicates.items()
+        if not name.endswith(('.pdf', '.log', '.aux'))
+    }
 
-    # Exclude intentional modules/modules-en pairs
     filtered = {}
     for name, paths in real_duplicates.items():
-        rels = [str(p.relative_to(PROJECT_ROOT.parent)) for p in paths]
-        has_modules = any('modules/' in r and 'modules-en/' not in r for r in rels)
-        has_modules_en = any('modules-en/' in r for r in rels)
+        rels = [str(path.relative_to(repository_root)) for path in paths]
+        has_modules = any('modules/' in relative and 'modules-en/' not in relative for relative in rels)
+        has_modules_en = any('modules-en/' in relative for relative in rels)
         if has_modules and has_modules_en and len(paths) == 2:
-            continue  # intentional bilingual pair
+            continue
         filtered[name] = paths
 
     if filtered:
-        messages.append(f"⚠️  {len(filtered)} duplicate filenames detected:")
+        messages.append(f"⚠️  {len(filtered)} duplicate tracked filenames detected:")
         for name, paths in sorted(filtered.items()):
-            for p in paths:
-                messages.append(f"     {p.relative_to(PROJECT_ROOT.parent)}")
+            for path in paths:
+                messages.append(f"     {path.relative_to(repository_root)}")
     else:
-        messages.append("✅ No unexpected duplicate files detected")
+        messages.append("✅ No unexpected duplicate tracked files detected")
 
     return TestResult(
         name="Duplicate File Detection",

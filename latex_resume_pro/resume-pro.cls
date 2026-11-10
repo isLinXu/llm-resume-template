@@ -1,5 +1,5 @@
 %%
-%% resume-pro.cls — 专业 LaTeX 简历样式类（Pro v3.9.0）
+%% resume-pro.cls — 专业 LaTeX 简历样式类（Pro v4.0.1）
 %% --------------------------------------------------------
 %%   设计准则：
 %%     - 经典学术简历风格：克制装饰、细线分隔、粗体语义层级
@@ -11,14 +11,14 @@
 %%     - 页眉页脚（fancyhdr）：左姓名、中页码、右更新日期
 %%     - 8 套内置主题 + 自定义主题 + QR 码 + 页数溢出警告
 %%     - 跨平台字体回退（macOS / Linux / Windows）
-%%     - v3.6.0: 头部渐变装饰条、技能标签渐变、卡片微阴影、
+%%     - v4.0.1: 头部渐变装饰条、技能标签渐变、卡片微阴影、
 %%               章节标题图标圆底、页脚细线渐变、摘要左侧装饰线
 %% --------------------------------------------------------
 %% 编译: xelatex resume-pro-zh.tex
 %%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{resume-pro}[2026/06/22 v3.9.0 Compact Professional Resume Class]
+\ProvidesClass{resume-pro}[2026/11/10 v4.0.1 Compact Professional Resume Class]
 
 %% ---------- 类选项 ----------
 \newif\if@rp@zh           \@rp@zhtrue
